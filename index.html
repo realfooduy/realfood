@@ -583,27 +583,19 @@ function updateResumen() {
 ══════════════════════════════ */
 function diaDisponible(nombreDia) {
   var hoy = new Date();
-  var ahora = hoy.getHours() * 60 + hoy.getMinutes(); // minutos desde medianoche
-  var medioDia = 12 * 60; // 720 minutos
-
-  // Mapeo de nombre a numero (0=dom, 1=lun...5=vie, 6=sab)
+  var ahora = hoy.getHours() * 60 + hoy.getMinutes();
+  var medioDia = 12 * 60;
+  var diaHoy = hoy.getDay();
   var mapDia = { 'Lunes':1, 'Martes':2, 'Miercoles':3, 'Jueves':4, 'Viernes':5 };
   var diaObjetivo = mapDia[nombreDia];
-  var diaHoy = hoy.getDay();
-
-  // Dia anterior al objetivo (si es lunes=1, anterior es domingo=0)
-  var diaAnterior = (diaObjetivo === 0) ? 6 : diaObjetivo - 1;
-
-  // Si hoy ES el dia anterior al objetivo y ya paso el mediodia -> no disponible
-  if (diaHoy === diaAnterior && ahora >= medioDia) return false;
-
-  // Si hoy ES el mismo dia objetivo -> no disponible (ya es muy tarde)
-  if (diaHoy === diaObjetivo) return false;
-
-  // Si el dia objetivo ya paso esta semana -> no disponible
-  // (ej: hoy es miercoles y quieren pedir lunes)
-  if (diaHoy > diaObjetivo) return false;
-
+  // Solo aplicar restriccion en la semana actual (la primera de la lista)
+  // Las semanas siguientes estan todas disponibles
+  if (semanaActiva === SEMANAS_ORDEN[0]) {
+    if (diaHoy > diaObjetivo) return false;
+    if (diaHoy === diaObjetivo) return false;
+    if (diaObjetivo === 1 && diaHoy === 0 && ahora >= medioDia) return false;
+    if (diaObjetivo > 1 && diaHoy === diaObjetivo - 1 && ahora >= medioDia) return false;
+  }
   return true;
 }
 
