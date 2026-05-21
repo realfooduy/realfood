@@ -426,12 +426,12 @@ function loadClientScreen() {
   showScreen('screenClient');
   // Restaurar pedido pendiente si volvio de WhatsApp
   try {
-    var pendiente = sessionStorage.getItem('pedidoPendiente');
+    var pendiente = localStorage.getItem('pedidoPendiente');
     if (pendiente) {
       var data = JSON.parse(pendiente);
       selDias = data.selDias || {};
       semanaActiva = data.semanaActiva || SEMANAS_ORDEN[0];
-      sessionStorage.removeItem('pedidoPendiente');
+      localStorage.removeItem('pedidoPendiente');
     } else {
       selDias = {};
     }
@@ -647,7 +647,7 @@ function abrirWSP() {
   var total = calc.total * precio;
   // Guardar estado del pedido antes de salir a WhatsApp
   try {
-    sessionStorage.setItem('pedidoPendiente', JSON.stringify({
+    localStorage.setItem('pedidoPendiente', JSON.stringify({
       selDias: selDias,
       semanaActiva: semanaActiva
     }));
@@ -656,7 +656,7 @@ function abrirWSP() {
     lineas.join('%0A') +
     '%0A%0ATotal: $' + total.toLocaleString('es-UY') +
     '%0A%0AAdjunto comprobante de transferencia.';
-  window.open('https://wa.me/59899028318?text=' + msg, '_blank');
+  window.location.href = 'https://wa.me/59899028318?text=' + msg;
 }
 
 function togglePagoCheck() {
