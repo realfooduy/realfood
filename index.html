@@ -424,9 +424,40 @@ function saveProfile() {
 
 function loadClientScreen() {
   showScreen('screenClient');
+  // Restaurar pedido pendiente si volvio de WhatsApp
+  try {
+    var pendiente = sessionStorage.getItem('pedidoPendiente');
+    if (pendiente) {
+      var data = JSON.parse(pendiente);
+      selDias = data.selDias || {};
+      semanaActiva = data.semanaActiva || SEMANAS_ORDEN[0];
+      sessionStorage.removeItem('pedidoPendiente');
+    } else {
+      selDias = {};
+    }
+  } catch(e) {
+    selDias = {};
+  }
   buildSemanaSel();
   buildWeekGrid();
-  selDias = {};
+  // Restaurar checkboxes y cantidades visualmente
+  Object.keys(selDias).forEach(function(dia) {
+    var row = gi('row-' + dia);
+    if (row) {
+      row.classList.add('selected');
+      var qtyEl = gi('qty-' + dia);
+      if (qtyEl) qtyEl.textContent = selDias[dia].qty;
+      var horaEl = gi('hora-' + dia);
+      if (horaEl) horaEl.value = selDias[dia].hora || '';
+      var dirEl = gi('dir-' + dia);
+      if (dirEl) dirEl.value = selDias[dia].dir || '';
+      var persEl = gi('pers-' + dia);
+      if (persEl) persEl.value = selDias[dia].personalizacion || '';
+      var notasEl = gi('notas-' + dia);
+      if (notasEl) notasEl.value = selDias[dia].notas || '';
+      updateBadge(dia);
+    }
+  });
   updateResumen();
 }
 
@@ -614,6 +645,13 @@ function abrirWSP() {
     return texto;
   });
   var total = calc.total * precio;
+  // Guardar estado del pedido antes de salir a WhatsApp
+  try {
+    sessionStorage.setItem('pedidoPendiente', JSON.stringify({
+      selDias: selDias,
+      semanaActiva: semanaActiva
+    }));
+  } catch(e) {}
   var msg = 'Hola Real Food! Quiero confirmar mi pedido:%0A%0A' +
     lineas.join('%0A') +
     '%0A%0ATotal: $' + total.toLocaleString('es-UY') +
