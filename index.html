@@ -785,7 +785,7 @@ function loadAdminTable(tab) {
         '<td style="font-weight:700">$' + p.precio_unitario + '</td>' +
         '<td>' + estadoBadge + '</td>' +
         '<td>' + confirmarBtn + '</td>' +
-        '<td><button class="btn-sm" style="border-color:var(--warn);color:var(--warn)" onclick="eliminarPedido(\'" + p.id + "\')" >✕</button></td></tr>';
+        '<td><button class="btn-sm" style="border-color:var(--warn);color:var(--warn)" onclick="eliminarPedido(\'' + p.id + '\')" >✕</button></td></tr>';
     }).join('');
   });
 }
