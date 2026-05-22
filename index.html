@@ -262,11 +262,6 @@ html,body{height:100%;font-family:var(--f);background:var(--cream);color:var(--t
     <div class="sect-title">Panel de gestión</div>
     <div class="sect-sub">Real Food. — viandas de la semana</div>
     <div class="admin-stats" id="adminStats"></div>
-    <div class="nav-tabs">
-      <button class="nav-tab active" onclick="adminTab('hoy')">Hoy</button>
-      <button class="nav-tab" onclick="adminTab('semana')">Esta semana</button>
-      <button class="nav-tab" onclick="adminTab('todos')">Todos</button>
-    </div>
     <div class="table-wrap">
       <table class="orders-table">
         <thead><tr>
@@ -739,8 +734,9 @@ function loadHistorial() {
 
 function loadAdminScreen() {
   showScreen('screenAdmin');
+  adminMode = 'todos';
   loadAdminStats();
-  loadAdminTable('hoy');
+  loadAdminTable('todos');
 }
 
 function loadAdminStats() {
@@ -780,7 +776,7 @@ function adminTab(tab) {
 
 function loadAdminTable(tab) {
   gi('adminTableBody').innerHTML = '<tr><td colspan="10" class="center" style="padding:40px;color:var(--t3)">Cargando...</td></tr>';
-  var q = sb.from('pedidos').select('*').order('horario',{ascending:true});
+  var q = sb.from('pedidos').select('*').order('dia_semana',{ascending:true}).order('horario',{ascending:true});
   var diasValidos = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
   if (diasValidos.indexOf(tab) !== -1) {
     q = q.eq('dia_semana', tab);
