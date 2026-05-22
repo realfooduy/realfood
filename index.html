@@ -791,7 +791,6 @@ function loadAdminTable(tab) {
 }
 
 function eliminarPedido(id) {
-  if (!confirm('Seguro que queres eliminar este pedido?')) return;
   sb.from('pedidos').delete().eq('id', id).then(function(res) {
     if(res.error) { toast('Error: ' + res.error.message, 'red'); return; }
     toast('Pedido eliminado.', '');
