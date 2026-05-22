@@ -135,7 +135,13 @@ html,body{height:100%;font-family:var(--f);background:var(--cream);color:var(--t
 .badge{display:inline-block;padding:3px 10px;border-radius:40px;font-size:11px;font-weight:700;font-family:var(--fc);letter-spacing:.5px;text-transform:uppercase}
 .badge.pending{background:#fff4e5;color:#b25e00}
 .badge.paid{background:var(--green-xl);color:var(--green-d)}
-.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:28px}
+.admin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:20px}@media(min-width:600px){.admin-stats{grid-template-columns:repeat(6,1fr)}}
+.stat-card{cursor:pointer;transition:all .18s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:var(--sh2)}
+.stat-card.active{border-top-color:var(--green);background:var(--green-xl)}
+.stat-card.active .stat-val{color:var(--green)}
+.stat-total{border-top-color:var(--t2)!important}
+.stat-total .stat-val{color:var(--t2)!important}
 @media(max-width:560px){.admin-stats{grid-template-columns:1fr 1fr}}
 .stat-card{background:var(--white);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:20px 22px;box-shadow:var(--sh);border-top:4px solid var(--brown)}
 .stat-val{font-family:var(--fc);font-size:36px;font-weight:800;color:var(--brown);line-height:1}
@@ -290,14 +296,14 @@ var MENUS = {
     dias: {
       'Lunes':     'Bondiola con boniato y huevo a la plancha',
       'Martes':    'Colita de cuadril al horno con papas y boniatos - Ensalada de zanahoria, remolacha y palta',
-      'Miercoles': 'Milanesas de carne con revuelto de zapallitos y remolacha',
+      'Miércoles': 'Milanesas de carne con revuelto de zapallitos y remolacha',
       'Jueves':    'Pollo a la plancha con pure de calabaza y palta',
       'Viernes':   'Chuleton con remolacha, brocoli y huevos a la plancha'
     }
   }
 };
 var SEMANAS_ORDEN = ['semana4'];
-var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
+var DIAS = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
 
 var BANCOS = [
   { id:'brou', nombre:'BROU', datos:'<strong>Banco:</strong> BROU<br><strong>Tipo:</strong> Caja de Ahorro<br><strong>Cuenta:</strong> 001299991-00001<br><strong>Titular:</strong> Sofia Vicente Nipoli<br><strong>Referencia:</strong> Tu nombre y apellido' },
@@ -740,29 +746,42 @@ function loadAdminScreen() {
 function loadAdminStats() {
   sb.from('pedidos').select('cantidad,subtotal,estado,dia_semana').then(function(res) {
     var todos = res.data || [];
-    var dias = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
+    var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
     var statsHtml = dias.map(function(dia) {
       var cant = todos.filter(function(p){ return p.dia_semana === dia; }).reduce(function(s,p){return s+p.cantidad;},0);
-      return '<div class="stat-card"><div class="stat-val">' + cant + '</div><div class="stat-lbl">' + dia + '</div></div>';
+      return '<div class="stat-card" id="stat-' + dia + '" onclick="adminTab(\'' + dia + '\')">' +
+        '<div class="stat-val">' + cant + '</div>' +
+        '<div class="stat-lbl">' + dia + '</div>' +
+        '</div>';
     }).join('');
     var total = todos.reduce(function(s,p){return s+p.cantidad;},0);
-    statsHtml += '<div class="stat-card"><div class="stat-val">' + total + '</div><div class="stat-lbl">Total viandas</div></div>';
+    var totalPesos = todos.reduce(function(s,p){return s+p.subtotal;},0);
+    statsHtml += '<div class="stat-card stat-total" onclick="adminTab(\'todos\')" id="stat-todos">' +
+      '<div class="stat-val">' + total + '</div>' +
+      '<div class="stat-lbl">Total viandas</div>' +
+      '</div>';
     gi('adminStats').innerHTML = statsHtml;
+    // Marcar activo
+    var activeEl = gi('stat-' + adminMode) || gi('stat-todos');
+    if(activeEl) activeEl.classList.add('active');
   });
 }
 
 function adminTab(tab) {
   adminMode = tab;
-  var tabs = document.querySelectorAll('#screenAdmin .nav-tab');
-  var names = ['Lunes','Martes','Miercoles','Jueves','Viernes','todos'];
-  for(var i=0; i<tabs.length; i++) tabs[i].classList.toggle('active', names[i] === tab);
+  // Marcar card activo
+  var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes','todos'];
+  dias.forEach(function(d) {
+    var el = gi('stat-' + d);
+    if(el) el.classList.toggle('active', d === tab);
+  });
   loadAdminTable(tab);
 }
 
 function loadAdminTable(tab) {
   gi('adminTableBody').innerHTML = '<tr><td colspan="10" class="center" style="padding:40px;color:var(--t3)">Cargando...</td></tr>';
   var q = sb.from('pedidos').select('*').order('horario',{ascending:true});
-  var diasValidos = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
+  var diasValidos = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
   if (diasValidos.indexOf(tab) !== -1) {
     q = q.eq('dia_semana', tab);
   }
