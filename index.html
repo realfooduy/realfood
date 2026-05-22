@@ -609,11 +609,24 @@ function diaDisponible(nombreDia) {
   var diaHoy = hoy.getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
   var ahora = hoy.getHours() * 60 + hoy.getMinutes();
   var medioDia = 12 * 60;
-  // Cada dia cierra cuando llega su dia anterior a las 12:00
-  // Lunes cierra domingo(0), Martes cierra lunes(1), etc.
-  var mapCierre = { 'Lunes':0, 'Martes':1, 'Miercoles':2, 'Jueves':3, 'Viernes':4 };
-  var diaCierre = mapCierre[nombreDia];
-  if (diaHoy === diaCierre && ahora >= medioDia) return false;
+  var pasoDeMediodia = ahora >= medioDia;
+
+  // El menu es para la semana PROXIMA (que empieza el lunes que viene).
+  // Cada dia de la semana proxima cierra el dia anterior de esa misma semana.
+  // Es decir, dentro de la semana proxima:
+  //   Lunes prox cierra domingo prox -> que es el domingo de esta semana -> diaHoy===0
+  //   Martes prox cierra lunes prox -> que es el lunes de la semana proxima -> todavia no llego si hoy es esta semana
+  //   Etc.
+  // CONCLUSION: de lunes(1) a sabado(6) de esta semana, solo cierra el lunes
+  // cuando es domingo. El resto se cierra durante la semana proxima.
+
+  // Solo aplica si hoy es domingo -> cierra el lunes
+  if (nombreDia === 'Lunes' && diaHoy === 0 && pasoDeMediodia) return false;
+
+  // Durante la semana proxima, cuando llega cada dia:
+  // Si hoy ya es lunes o despues de la semana proxima -> los dias anteriores cierran
+  // Pero esto lo maneja el cambio de menu semanal, no el codigo.
+
   return true;
 }
 
