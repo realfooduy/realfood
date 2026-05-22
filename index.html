@@ -606,19 +606,14 @@ function updateResumen() {
 ══════════════════════════════ */
 function diaDisponible(nombreDia) {
   var hoy = new Date();
+  var diaHoy = hoy.getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
   var ahora = hoy.getHours() * 60 + hoy.getMinutes();
   var medioDia = 12 * 60;
-  var diaHoy = hoy.getDay();
-  var mapDia = { 'Lunes':1, 'Martes':2, 'Miercoles':3, 'Jueves':4, 'Viernes':5 };
-  var diaObjetivo = mapDia[nombreDia];
-  // Solo aplicar restriccion en la semana actual (la primera de la lista)
-  // Las semanas siguientes estan todas disponibles
-  if (semanaActiva === SEMANAS_ORDEN[0]) {
-    if (diaHoy > diaObjetivo) return false;
-    if (diaHoy === diaObjetivo) return false;
-    if (diaObjetivo === 1 && diaHoy === 0 && ahora >= medioDia) return false;
-    if (diaObjetivo > 1 && diaHoy === diaObjetivo - 1 && ahora >= medioDia) return false;
-  }
+  // Cada dia cierra cuando llega su dia anterior a las 12:00
+  // Lunes cierra domingo(0), Martes cierra lunes(1), etc.
+  var mapCierre = { 'Lunes':0, 'Martes':1, 'Miercoles':2, 'Jueves':3, 'Viernes':4 };
+  var diaCierre = mapCierre[nombreDia];
+  if (diaHoy === diaCierre && ahora >= medioDia) return false;
   return true;
 }
 
