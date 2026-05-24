@@ -609,7 +609,7 @@ function buildWeekGrid() {
     row.innerHTML =
       '<div class="day-header" ' + onclickDia + '>' +
         '<div class="day-check"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
-        '<div class="day-name-wrap"><div class="day-name">' + dia + '</div><div class="day-menu">' + plato + '</div></div>' +
+        '<div class="day-name-wrap"><div class="day-name">' + (MENUS[semanaActiva] && MENUS[semanaActiva].fechas && MENUS[semanaActiva].fechas[dia] ? MENUS[semanaActiva].fechas[dia] : dia) + '</div><div class="day-menu">' + plato + '</div></div>' +
         '<div class="day-qty-badge" id="badge-' + dia + '">' + (!disponible ? 'Cerrado' : '-') + '</div>' +
       '</div>' +
       '<div class="day-detail">' +
