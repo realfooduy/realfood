@@ -402,7 +402,7 @@ var UMBRAL_DESC   = 3;
 var MENUS = {
   semana4: {
     label: 'Menú Semanal',
-    fechas: { 'Lunes':'Lunes 26', 'Martes':'Martes 27', 'Miércoles':'Miércoles 28', 'Jueves':'Jueves 29', 'Viernes':'Viernes 30' },
+    fechas: { 'Lunes':'Lunes 25', 'Martes':'Martes 26', 'Miércoles':'Miércoles 27', 'Jueves':'Jueves 28', 'Viernes':'Viernes 29' },
     dias: {
       'Lunes':     'Bondiola con boniato y huevo a la plancha',
       'Martes':    'Colita de cuadril al horno con papas y boniatos - Ensalada de zanahoria, remolacha y palta',
@@ -971,8 +971,11 @@ function calcularIngresosAuto() {
 function guardarSemanaContabilidad() {
   var nombre = gi('contaNombre').value.trim();
   if(!nombre) { toast('Ingresá el nombre de la semana.', 'red'); return; }
-  var ingresos     = parseFloat(gi('modalConta').dataset.ingresos) || 0;
-  var viandas      = parseInt(gi('modalConta').dataset.viandas)    || 0;
+  var ingresos = parseFloat(gi('modalConta').dataset.ingresos) || 0;
+  var viandas  = parseInt(gi('modalConta').dataset.viandas)    || 0;
+  if(!ingresos && !gi('modalConta').dataset.editId) {
+    toast('Elegi la semana para calcular los ingresos.', 'red'); return;
+  }
   var combustible  = parseFloat(gi('gastoCombustible').value)  || 0;
   var alimentos    = parseFloat(gi('gastoAlimentos').value)    || 0;
   var servicios    = parseFloat(gi('gastoServicios').value)    || 0;
@@ -1002,12 +1005,19 @@ function editarSemana(id) {
   var sem = data.find(function(s){ return s.id === id; });
   if(!sem) return;
   gi('contaNombre').value       = sem.nombre;
-  gi('contaIngresos').value     = sem.ingresos;
-  gi('gastoCombustible').value  = sem.combustible;
-  gi('gastoAlimentos').value    = sem.alimentos;
-  gi('gastoServicios').value    = sem.servicios;
+  gi('gastoCombustible').value  = sem.combustible || 0;
+  gi('gastoAlimentos').value    = sem.alimentos   || 0;
+  gi('gastoServicios').value    = sem.servicios   || 0;
+  gi('ingresosAutoVal').textContent     = '$' + (sem.ingresos||0).toLocaleString('es-UY');
+  gi('ingresosAutoDetalle').textContent = (sem.viandas||0) + ' viandas vendidas';
   gi('modalContaTitulo').textContent = 'Editar semana';
-  gi('modalConta').dataset.editId = id;
+  gi('modalConta').dataset.editId  = id;
+  gi('modalConta').dataset.ingresos = sem.ingresos || 0;
+  gi('modalConta').dataset.viandas  = sem.viandas  || 0;
+  // Populate selector
+  var sel = gi('contaSemanaKey');
+  sel.innerHTML = '<option value="">Elegi la semana</option>' +
+    SEMANAS_ORDEN.map(function(k){ return '<option value="' + k + '">' + MENUS[k].label + '</option>'; }).join('');
   gi('modalConta').classList.add('open');
 }
 
