@@ -154,6 +154,37 @@ html,body{height:100%;font-family:var(--f);background:var(--cream);color:var(--t
 .spinner{width:36px;height:36px;border:3px solid var(--bdr);border-top-color:var(--brown);border-radius:50%;animation:spin .7s linear infinite;margin:60px auto}
 @keyframes spin{to{transform:rotate(360deg)}}
 .center{text-align:center}
+.conta-semana{background:var(--white);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:20px 24px;margin-bottom:14px;box-shadow:var(--sh)}
+.conta-semana-header{display:flex;justify-content:space-between;align-items:center;cursor:pointer;gap:12px}
+.conta-semana-titulo{font-family:var(--fc);font-size:16px;font-weight:800;color:var(--brown);text-transform:uppercase}
+.conta-semana-ganancia{font-family:var(--fc);font-size:20px;font-weight:800}
+.conta-semana-ganancia.positiva{color:var(--green)}
+.conta-semana-ganancia.negativa{color:var(--warn)}
+.conta-detalle{display:none;margin-top:16px;border-top:1px solid var(--bdr2);padding-top:16px}
+.conta-detalle.open{display:block}
+.conta-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bdr2);font-size:14px}
+.conta-row:last-child{border-bottom:none}
+.conta-row .l{color:var(--t2)}
+.conta-row .r{font-weight:700;color:var(--t1)}
+.conta-row .r.neg{color:var(--warn)}
+.conta-row .r.pos{color:var(--green)}
+.gasto-input{width:100%;border:1.5px solid var(--bdr);border-radius:var(--r1);padding:8px 10px;font-size:14px;font-family:var(--f);margin-top:4px}
+.gasto-input:focus{border-color:var(--brown);outline:none}
+.conta-total-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-family:var(--fc);font-size:17px;font-weight:800}
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border-radius:var(--r3);padding:32px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:var(--sh2)}
+.modal-title{font-family:var(--fc);font-size:22px;font-weight:800;color:var(--brown);text-transform:uppercase;margin-bottom:20px}
+.modal-close{float:right;background:none;border:none;font-size:22px;cursor:pointer;color:var(--t3);margin-top:-4px}
+.cliente-card{background:var(--white);border:1.5px solid var(--bdr);border-radius:var(--r2);padding:16px 18px;margin-bottom:10px;display:flex;justify-content:space-between;align-items:center;gap:12px}
+.cliente-info{flex:1}
+.cliente-nombre{font-family:var(--fc);font-weight:800;font-size:16px;color:var(--brown);text-transform:uppercase}
+.cliente-detalle{font-size:12px;color:var(--t3);margin-top:2px}
+.day-check-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--bdr2)}
+.day-check-row:last-child{border-bottom:none}
+.day-check-row label{font-size:14px;font-weight:600;color:var(--t2);flex:1}
+.pedido-qty{width:50px;text-align:center;border:1.5px solid var(--bdr);border-radius:var(--r1);padding:6px;font-size:14px;font-family:var(--f)}
+.pedido-hora{border:1.5px solid var(--bdr);border-radius:var(--r1);padding:6px;font-size:13px;font-family:var(--f);flex:1}
 @media(max-width:600px){.topbar{padding:0 16px}.main{padding:24px 14px 80px}.auth-box{padding:32px 24px}.pricing-banner{padding:20px;gap:16px}}
 </style>
 </head>
@@ -259,22 +290,99 @@ html,body{height:100%;font-family:var(--f);background:var(--cream);color:var(--t
 
 <div class="screen" id="screenAdmin">
   <div class="main">
-    <div class="sect-title">Panel de gestión</div>
-    <div class="sect-sub">Real Food. — viandas de la semana</div>
-    <div class="admin-stats" id="adminStats"></div>
-    <div class="table-wrap">
-      <table class="orders-table">
-        <thead><tr>
-          <th>Cliente</th><th>Día / Semana</th><th>Menú</th><th>Cant.</th>
-          <th>Horario</th><th>Dirección</th><th>Personalización</th><th>$/u</th><th>Estado</th><th></th>
-        </tr></thead>
-        <tbody id="adminTableBody"><tr><td colspan="10" class="center" style="padding:40px;color:var(--t3)">Cargando...</td></tr></tbody>
-      </table>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;flex-wrap:wrap;gap:8px">
+      <div class="sect-title" style="margin-bottom:0">Panel de gestión</div>
+      <div class="nav-tabs" style="margin-bottom:0">
+        <button class="nav-tab active" id="adminTabPedidos" onclick="switchAdminSection('pedidos')">Pedidos</button>
+        <button class="nav-tab" id="adminTabConta" onclick="switchAdminSection('conta')">Contabilidad</button>
+      </div>
     </div>
+    <div class="sect-sub">Real Food. — viandas de la semana</div>
+
+    <div id="sectionPedidos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div class="admin-stats" id="adminStats" style="margin-bottom:0;flex:1"></div>
+        <button class="btn-primary" style="max-width:180px;margin-top:0" onclick="abrirModalCliente()">+ Nuevo cliente</button>
+      </div>
+      <div id="listaClientes" style="margin-bottom:20px"></div>
+      <div class="table-wrap">
+        <table class="orders-table">
+          <thead><tr>
+            <th>Cliente</th><th>Día / Semana</th><th>Menú</th><th>Cant.</th>
+            <th>Horario</th><th>Dirección</th><th>Personalización</th><th>$/u</th><th>Estado</th><th></th><th></th>
+          </tr></thead>
+          <tbody id="adminTableBody"><tr><td colspan="11" class="center" style="padding:40px;color:var(--t3)">Cargando...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="sectionConta" style="display:none">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px">
+        <div style="font-family:var(--fc);font-size:14px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Historial de semanas</div>
+        <button class="btn-primary" style="max-width:180px;margin-top:0" onclick="nuevaSemanaContabilidad()">+ Nueva semana</button>
+      </div>
+      <div id="contaLista"></div>
+    </div>
+
   </div>
 </div>
 
+<!-- MODAL NUEVO CLIENTE -->
+<div class="modal-overlay" id="modalCliente">
+  <div class="modal-box">
+    <button class="modal-close" onclick="cerrarModal('modalCliente')">×</button>
+    <div class="modal-title">Nuevo cliente</div>
+    <div class="field"><label>Nombre completo</label><input type="text" id="cNombre" placeholder="Juan García"></div>
+    <div class="field"><label>Teléfono</label><input type="tel" id="cTel" placeholder="099 000 000"></div>
+    <div class="field"><label>Dirección</label><input type="text" id="cDir" placeholder="Calle 1234"></div>
+    <div class="field"><label>Email (opcional)</label><input type="email" id="cEmail" placeholder="opcional@email.com"></div>
+    <button class="btn-primary" onclick="guardarClienteManual()">Guardar cliente</button>
+  </div>
 </div>
+
+<!-- MODAL NUEVO PEDIDO -->
+<div class="modal-overlay" id="modalPedido">
+  <div class="modal-box">
+    <button class="modal-close" onclick="cerrarModal('modalPedido')">×</button>
+    <div class="modal-title" id="modalPedidoTitulo">Pedido</div>
+    <div id="diasPedidoAdmin"></div>
+    <div style="margin-top:16px">
+      <div class="field">
+        <label>Precio por vianda</label>
+        <select id="precioPedidoAdmin" style="border:1.5px solid var(--bdr);border-radius:var(--r1);padding:8px;font-family:var(--f);font-size:14px;width:100%">
+          <option value="290">$290 (3 o más días)</option>
+          <option value="330">$330 (1-2 días)</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn-primary green-btn" style="margin-top:8px" onclick="guardarPedidoManual()">Guardar pedidos</button>
+  </div>
+</div>
+
+<!-- MODAL CONTABILIDAD -->
+<div class="modal-overlay" id="modalConta">
+  <div class="modal-box">
+    <button class="modal-close" onclick="cerrarModal('modalConta')">×</button>
+    <div class="modal-title" id="modalContaTitulo">Nueva semana</div>
+    <div class="field">
+      <label>Nombre de la semana</label>
+      <input type="text" id="contaNombre" placeholder="Semana del 25 al 29 de mayo">
+    </div>
+    <div class="field">
+      <label>Ingresos totales ($)</label>
+      <input type="number" id="contaIngresos" placeholder="0" min="0">
+      <small style="color:var(--t3);font-size:11px;margin-top:3px">Podés dejarlo en 0 y calcularlo de los pedidos</small>
+    </div>
+    <div style="background:var(--brown-xxl);border-radius:var(--r2);padding:16px;margin-bottom:14px">
+      <div style="font-family:var(--fc);font-size:12px;font-weight:700;color:var(--brown);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Gastos</div>
+      <div class="field"><label>Combustible ($)</label><input type="number" id="gastoCombustible" placeholder="0" min="0" class="gasto-input"></div>
+      <div class="field"><label>Alimentos ($)</label><input type="number" id="gastoAlimentos" placeholder="0" min="0" class="gasto-input"></div>
+      <div class="field"><label>Servicios ($)</label><input type="number" id="gastoServicios" placeholder="0" min="0" class="gasto-input"></div>
+    </div>
+    <button class="btn-primary" onclick="guardarSemanaContabilidad()">Guardar semana</button>
+  </div>
+</div>
+
 <div id="toast"></div>
 
 <script>
@@ -737,6 +845,7 @@ function loadAdminScreen() {
   adminMode = 'todos';
   loadAdminStats();
   loadAdminTable('todos');
+  renderClientesManuales();
 }
 
 function loadAdminStats() {
@@ -804,11 +913,248 @@ function loadAdminTable(tab) {
   });
 }
 
+/* ══════ ADMIN SECTIONS ══════ */
+function switchAdminSection(section) {
+  gi('sectionPedidos').style.display = section === 'pedidos' ? '' : 'none';
+  gi('sectionConta').style.display   = section === 'conta'   ? '' : 'none';
+  gi('adminTabPedidos').classList.toggle('active', section === 'pedidos');
+  gi('adminTabConta').classList.toggle('active',   section === 'conta');
+  if(section === 'conta') renderContabilidad();
+}
+
+/* ══════ CONTABILIDAD ══════ */
+function getContaData() {
+  return JSON.parse(localStorage.getItem('contabilidad') || '[]');
+}
+function saveContaData(data) {
+  localStorage.setItem('contabilidad', JSON.stringify(data));
+}
+
+function nuevaSemanaContabilidad() {
+  gi('contaNombre').value = '';
+  gi('contaIngresos').value = '';
+  gi('gastoCombustible').value = '';
+  gi('gastoAlimentos').value = '';
+  gi('gastoServicios').value = '';
+  gi('modalContaTitulo').textContent = 'Nueva semana';
+  gi('modalConta').dataset.editId = '';
+  gi('modalConta').classList.add('open');
+}
+
+function guardarSemanaContabilidad() {
+  var nombre = gi('contaNombre').value.trim();
+  if(!nombre) { toast('Ingresá el nombre de la semana.', 'red'); return; }
+  var ingresos     = parseFloat(gi('contaIngresos').value)     || 0;
+  var combustible  = parseFloat(gi('gastoCombustible').value)  || 0;
+  var alimentos    = parseFloat(gi('gastoAlimentos').value)    || 0;
+  var servicios    = parseFloat(gi('gastoServicios').value)    || 0;
+  var totalGastos  = combustible + alimentos + servicios;
+  var ganancia     = ingresos - totalGastos;
+
+  var data = getContaData();
+  var editId = gi('modalConta').dataset.editId;
+
+  if(editId) {
+    var idx = data.findIndex(function(s){ return s.id === editId; });
+    if(idx > -1) {
+      data[idx] = { id:editId, nombre:nombre, ingresos:ingresos, combustible:combustible, alimentos:alimentos, servicios:servicios, totalGastos:totalGastos, ganancia:ganancia };
+    }
+  } else {
+    data.unshift({ id: Date.now().toString(), nombre:nombre, ingresos:ingresos, combustible:combustible, alimentos:alimentos, servicios:servicios, totalGastos:totalGastos, ganancia:ganancia });
+  }
+
+  saveContaData(data);
+  cerrarModal('modalConta');
+  toast('Semana guardada.', 'green');
+  renderContabilidad();
+}
+
+function editarSemana(id) {
+  var data = getContaData();
+  var sem = data.find(function(s){ return s.id === id; });
+  if(!sem) return;
+  gi('contaNombre').value       = sem.nombre;
+  gi('contaIngresos').value     = sem.ingresos;
+  gi('gastoCombustible').value  = sem.combustible;
+  gi('gastoAlimentos').value    = sem.alimentos;
+  gi('gastoServicios').value    = sem.servicios;
+  gi('modalContaTitulo').textContent = 'Editar semana';
+  gi('modalConta').dataset.editId = id;
+  gi('modalConta').classList.add('open');
+}
+
+function eliminarSemana(id) {
+  var data = getContaData().filter(function(s){ return s.id !== id; });
+  saveContaData(data);
+  renderContabilidad();
+  toast('Semana eliminada.', '');
+}
+
+function toggleContaDetalle(id) {
+  var el = gi('conta-det-' + id);
+  if(el) el.classList.toggle('open');
+}
+
+function renderContabilidad() {
+  var data = getContaData();
+  var wrap = gi('contaLista');
+  if(!data.length) {
+    wrap.innerHTML = '<p style="color:var(--t3);text-align:center;padding:40px">No hay semanas registradas. Tocá "+ Nueva semana" para agregar.</p>';
+    return;
+  }
+  wrap.innerHTML = data.map(function(sem) {
+    var ganClass = sem.ganancia >= 0 ? 'positiva' : 'negativa';
+    var ganSign  = sem.ganancia >= 0 ? '+' : '';
+    return '<div class="conta-semana">' +
+      '<div class="conta-semana-header" onclick="toggleContaDetalle(\'' + sem.id + '\')">' +
+        '<div class="conta-semana-titulo">' + sem.nombre + '</div>' +
+        '<div style="display:flex;align-items:center;gap:12px">' +
+          '<div class="conta-semana-ganancia ' + ganClass + '">' + ganSign + '$' + sem.ganancia.toLocaleString('es-UY') + '</div>' +
+          '<span style="color:var(--t3);font-size:18px">›</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="conta-detalle" id="conta-det-' + sem.id + '">' +
+        '<div class="conta-row"><span class="l">Ingresos</span><span class="r pos">$' + sem.ingresos.toLocaleString('es-UY') + '</span></div>' +
+        '<div class="conta-row"><span class="l">Combustible</span><span class="r neg">-$' + sem.combustible.toLocaleString('es-UY') + '</span></div>' +
+        '<div class="conta-row"><span class="l">Alimentos</span><span class="r neg">-$' + sem.alimentos.toLocaleString('es-UY') + '</span></div>' +
+        '<div class="conta-row"><span class="l">Servicios</span><span class="r neg">-$' + sem.servicios.toLocaleString('es-UY') + '</span></div>' +
+        '<div class="conta-total-row"><span style="color:var(--brown)">Ganancia neta</span><span class="' + ganClass + '">' + ganSign + '$' + sem.ganancia.toLocaleString('es-UY') + '</span></div>' +
+        '<div style="display:flex;gap:8px;margin-top:8px">' +
+          '<button class="btn-sm solid" onclick="editarSemana(\'' + sem.id + '\')" >Editar</button>' +
+          '<button class="btn-sm" style="border-color:var(--warn);color:var(--warn)" onclick="eliminarSemana(\'' + sem.id + '\')" >Eliminar</button>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
 function eliminarPedido(id) {
   sb.from('pedidos').delete().eq('id', id).then(function(res) {
     if(res.error) { toast('Error: ' + res.error.message, 'red'); return; }
     toast('Pedido eliminado.', '');
     loadAdminTable(adminMode); loadAdminStats();
+  });
+}
+
+/* ══════ CLIENTES MANUALES ══════ */
+var clienteSeleccionado = null;
+
+function abrirModalCliente() {
+  gi('cNombre').value = '';
+  gi('cTel').value = '';
+  gi('cDir').value = '';
+  gi('cEmail').value = '';
+  gi('modalCliente').classList.add('open');
+}
+
+function cerrarModal(id) {
+  gi(id).classList.remove('open');
+}
+
+function guardarClienteManual() {
+  var nombre = gi('cNombre').value.trim();
+  var tel    = gi('cTel').value.trim();
+  var dir    = gi('cDir').value.trim();
+  var email  = gi('cEmail').value.trim();
+  if(!nombre) { toast('Ingresá al menos el nombre.', 'red'); return; }
+
+  var clientes = JSON.parse(localStorage.getItem('clientesManuales') || '[]');
+  clientes.push({ id: Date.now().toString(), nombre:nombre, telefono:tel, direccion:dir, email:email });
+  localStorage.setItem('clientesManuales', JSON.stringify(clientes));
+  cerrarModal('modalCliente');
+  toast('Cliente guardado.', 'green');
+  renderClientesManuales();
+}
+
+function renderClientesManuales() {
+  var clientes = JSON.parse(localStorage.getItem('clientesManuales') || '[]');
+  var wrap = gi('listaClientes');
+  if(!clientes.length) { wrap.innerHTML = ''; return; }
+  wrap.innerHTML = '<div style="font-family:var(--fc);font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:8px">Clientes manuales</div>' +
+    clientes.map(function(c) {
+      return '<div class="cliente-card">' +
+        '<div class="cliente-info">' +
+          '<div class="cliente-nombre">' + c.nombre + '</div>' +
+          '<div class="cliente-detalle">' + (c.telefono||'') + (c.direccion ? ' · ' + c.direccion : '') + '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px">' +
+          '<button class="btn-sm solid" onclick="abrirPedidoManualById(\'' + c.id + '\')" >+ Pedido</button>' +
+          '<button class="btn-sm" style="border-color:var(--warn);color:var(--warn)" onclick="eliminarClienteManual(\'' + c.id + '\')" >✕</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function eliminarClienteManual(id) {
+  var clientes = JSON.parse(localStorage.getItem('clientesManuales') || '[]');
+  clientes = clientes.filter(function(c){ return c.id !== id; });
+  localStorage.setItem('clientesManuales', JSON.stringify(clientes));
+  renderClientesManuales();
+}
+
+function abrirPedidoManualById(id) {
+  var clientes = JSON.parse(localStorage.getItem('clientesManuales') || '[]');
+  var cliente = clientes.find(function(c){ return c.id === id; });
+  if(cliente) abrirPedidoManual(cliente);
+}
+
+function abrirPedidoManual(cliente) {
+  clienteSeleccionado = typeof cliente === 'string' ? JSON.parse(cliente) : cliente;
+  gi('modalPedidoTitulo').textContent = 'Pedido — ' + clienteSeleccionado.nombre;
+  var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+  var menu = MENUS[SEMANAS_ORDEN[0]].dias;
+  gi('diasPedidoAdmin').innerHTML = dias.map(function(dia) {
+    return '<div class="day-check-row">' +
+      '<input type="checkbox" id="adm-' + dia + '" style="width:18px;height:18px;accent-color:var(--brown)">' +
+      '<label for="adm-' + dia + '">' + dia + '<br><span style="font-size:11px;color:var(--t3);font-weight:400">' + (menu[dia]||'') + '</span></label>' +
+      '<input type="number" id="admqty-' + dia + '" value="1" min="1" max="10" class="pedido-qty">' +
+      '<select id="admhora-' + dia + '" class="pedido-hora">' +
+        '<option value="">Sin horario</option>' +
+        '<option>10:30 - 11:00</option><option>11:00 - 11:30</option><option>11:30 - 12:00</option>' +
+        '<option>12:00 - 12:30</option><option>12:30 - 13:00</option><option>13:00 - 13:30</option>' +
+        '<option>13:30 - 14:00</option><option>14:00 - 14:30</option>' +
+      '</select>' +
+    '</div>';
+  }).join('');
+  gi('modalPedido').classList.add('open');
+}
+
+function guardarPedidoManual() {
+  var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+  var menu = MENUS[SEMANAS_ORDEN[0]].dias;
+  var precio = parseInt(gi('precioPedidoAdmin').value);
+  var rows = [];
+  dias.forEach(function(dia) {
+    if(gi('adm-' + dia) && gi('adm-' + dia).checked) {
+      var qty = parseInt(gi('admqty-' + dia).value) || 1;
+      rows.push({
+        user_id: '69d14511-9d48-49b8-a6d7-9343b81c8913',
+        user_email: clienteSeleccionado.email || '',
+        user_nombre: clienteSeleccionado.nombre,
+        user_telefono: clienteSeleccionado.telefono || '',
+        semana_key: SEMANAS_ORDEN[0],
+        semana_label: MENUS[SEMANAS_ORDEN[0]].label,
+        dia_semana: dia,
+        menu_dia: menu[dia] || '',
+        cantidad: qty,
+        precio_unitario: precio,
+        subtotal: qty * precio,
+        horario: gi('admhora-' + dia).value,
+        direccion: clienteSeleccionado.direccion || '',
+        personalizacion: '',
+        notas: '',
+        pago_confirmado: true,
+        estado: 'confirmado'
+      });
+    }
+  });
+  if(!rows.length) { toast('Elegí al menos un día.', 'red'); return; }
+  sb.from('pedidos').insert(rows).then(function(res) {
+    if(res.error) { toast('Error: ' + res.error.message, 'red'); return; }
+    toast('Pedidos guardados!', 'green');
+    cerrarModal('modalPedido');
+    loadAdminStats();
+    loadAdminTable(adminMode);
   });
 }
 
