@@ -622,7 +622,7 @@ function diaDisponible(nombreDia) {
   // cuando es domingo. El resto se cierra durante la semana proxima.
 
   // Solo aplica si hoy es domingo -> cierra el lunes
-  if (nombreDia === 'Lunes' && diaHoy === 0 && pasoDeMediodia) return false;
+  if (nombreDia === 'Lunes' && diaHoy === 0 && ahora >= 17*60) return false;
 
   // Durante la semana proxima, cuando llega cada dia:
   // Si hoy ya es lunes o despues de la semana proxima -> los dias anteriores cierran
