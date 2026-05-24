@@ -295,6 +295,7 @@ html,body{height:100%;font-family:var(--f);background:var(--cream);color:var(--t
       <div class="nav-tabs" style="margin-bottom:0">
         <button class="nav-tab active" id="adminTabPedidos" onclick="switchAdminSection('pedidos')">Pedidos</button>
         <button class="nav-tab" id="adminTabConta" onclick="switchAdminSection('conta')">Contabilidad</button>
+        <button class="nav-tab" id="adminTabMenu" onclick="switchAdminSection('menu')">Menú</button>
       </div>
     </div>
     <div class="sect-sub">Real Food. — viandas de la semana</div>
@@ -313,6 +314,25 @@ html,body{height:100%;font-family:var(--f);background:var(--cream);color:var(--t
           </tr></thead>
           <tbody id="adminTableBody"><tr><td colspan="11" class="center" style="padding:40px;color:var(--t3)">Cargando...</td></tr></tbody>
         </table>
+      </div>
+    </div>
+
+    <!-- SECCION MENU -->
+    <div id="sectionMenu" style="display:none">
+      <div style="margin-bottom:20px">
+        <div style="font-family:var(--fc);font-size:14px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Menú de la semana siguiente</div>
+        <div style="font-size:13px;color:var(--t3)">Cargá los platos del lunes al viernes. Al guardar se actualiza para todos los clientes.</div>
+      </div>
+      <div class="profile-card">
+        <div class="field"><label>Lunes</label><input type="text" id="menuLunes" placeholder="Ej: Bondiola con boniato y huevo a la plancha"></div>
+        <div class="field"><label>Martes</label><input type="text" id="menuMartes" placeholder="Ej: Colita de cuadril al horno con papas..."></div>
+        <div class="field"><label>Miércoles</label><input type="text" id="menuMiercoles" placeholder="Ej: Milanesas de carne con..."></div>
+        <div class="field"><label>Jueves</label><input type="text" id="menuJueves" placeholder="Ej: Pollo a la plancha con..."></div>
+        <div class="field"><label>Viernes</label><input type="text" id="menuViernes" placeholder="Ej: Chuletón con remolacha..."></div>
+        <div style="background:var(--brown-xxl);border-radius:var(--r2);padding:14px 16px;margin-bottom:16px;font-size:13px;color:var(--brown)">
+          ⚠️ Al guardar, el menú se actualiza <strong>de inmediato</strong> para todos los clientes. Hacélo el sábado o domingo antes de las 17:00.
+        </div>
+        <button class="btn-primary" style="max-width:240px" onclick="guardarMenuSemana()">Guardar menú</button>
       </div>
     </div>
 
@@ -528,6 +548,7 @@ function saveProfile() {
 }
 
 function loadClientScreen() {
+  iniciarMenuDesdeStorage();
   showScreen('screenClient');
   // Restaurar pedido pendiente si volvio de WhatsApp
   try {
@@ -849,6 +870,7 @@ function loadHistorial() {
 function loadAdminScreen() {
   showScreen('screenAdmin');
   adminMode = 'todos';
+  iniciarMenuDesdeStorage();
   loadAdminStats();
   loadAdminTable('todos');
   renderClientesManuales();
@@ -923,9 +945,61 @@ function loadAdminTable(tab) {
 function switchAdminSection(section) {
   gi('sectionPedidos').style.display = section === 'pedidos' ? '' : 'none';
   gi('sectionConta').style.display   = section === 'conta'   ? '' : 'none';
+  gi('sectionMenu').style.display    = section === 'menu'    ? '' : 'none';
   gi('adminTabPedidos').classList.toggle('active', section === 'pedidos');
   gi('adminTabConta').classList.toggle('active',   section === 'conta');
+  gi('adminTabMenu').classList.toggle('active',    section === 'menu');
   if(section === 'conta') renderContabilidad();
+  if(section === 'menu')  cargarMenuActual();
+}
+
+/* ══════ MENU SEMANAL ══════ */
+function cargarMenuActual() {
+  var menu = MENUS[SEMANAS_ORDEN[0]];
+  if(!menu) return;
+  gi('menuLunes').value     = menu.dias['Lunes']     || '';
+  gi('menuMartes').value    = menu.dias['Martes']    || '';
+  gi('menuMiercoles').value = menu.dias['Miércoles'] || '';
+  gi('menuJueves').value    = menu.dias['Jueves']    || '';
+  gi('menuViernes').value   = menu.dias['Viernes']   || '';
+}
+
+function guardarMenuSemana() {
+  var lunes     = gi('menuLunes').value.trim();
+  var martes    = gi('menuMartes').value.trim();
+  var miercoles = gi('menuMiercoles').value.trim();
+  var jueves    = gi('menuJueves').value.trim();
+  var viernes   = gi('menuViernes').value.trim();
+
+  if(!lunes || !martes || !miercoles || !jueves || !viernes) {
+    toast('Completá todos los días antes de guardar.', 'red'); return;
+  }
+
+  // Guardar en localStorage para persistir entre sesiones
+  var nuevoMenu = {
+    'Lunes':     lunes,
+    'Martes':    martes,
+    'Miércoles': miercoles,
+    'Jueves':    jueves,
+    'Viernes':   viernes
+  };
+
+  localStorage.setItem('menuSemanal', JSON.stringify(nuevoMenu));
+
+  // Actualizar en memoria
+  MENUS[SEMANAS_ORDEN[0]].dias = nuevoMenu;
+
+  toast('Menú guardado! Los clientes ya ven el nuevo menú. ✅', 'green');
+}
+
+function iniciarMenuDesdeStorage() {
+  try {
+    var guardado = localStorage.getItem('menuSemanal');
+    if(guardado) {
+      var menu = JSON.parse(guardado);
+      MENUS[SEMANAS_ORDEN[0]].dias = menu;
+    }
+  } catch(e) {}
 }
 
 /* ══════ CONTABILIDAD ══════ */
