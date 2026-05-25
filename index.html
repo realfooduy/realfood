@@ -1315,101 +1315,99 @@ function switchAdminSection(section) {
 
 /* ══════ DELIVERY ══════ */
 var delivDiaActivo = 'Lunes';
-var delivEntregados = {}; // { pedido_id: true }
+var delivEntregados = {};
+var delivTodosCache = [];
 
 function initDelivery() {
-  // Cargar estado entregados desde localStorage
-  try {
-    delivEntregados = JSON.parse(localStorage.getItem('delivEntregados') || '{}');
-  } catch(e) { delivEntregados = {}; }
-
-  // Construir selector de dias
   var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
   var sel = gi('delivDiaSel');
   sel.innerHTML = dias.map(function(d) {
-    return '<button class="semana-btn' + (d === delivDiaActivo ? ' active' : '') + '" onclick="selDelivDia(\'' + d + '\')" >' + d + '</button>';
+    return '<button class="semana-btn' + (d === delivDiaActivo ? ' active' : '') + '" onclick="selDelivDia(\'' + d + '\')">' + d + '</button>';
   }).join('');
-
   cargarDelivery();
 }
 
 function selDelivDia(dia) {
   delivDiaActivo = dia;
-  var btns = gi('delivDiaSel').querySelectorAll('.semana-btn');
   var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
-  btns.forEach(function(b, i) { b.classList.toggle('active', dias[i] === dia); });
-  cargarDelivery();
+  gi('delivDiaSel').querySelectorAll('.semana-btn').forEach(function(b,i){ b.classList.toggle('active', dias[i]===dia); });
+  renderDelivery();
 }
 
 function cargarDelivery() {
   gi('delivLista').innerHTML = '<div class="spinner"></div>';
-
-  sb.from('pedidos').select('*').order('horario', {ascending:true}).then(function(res) {
-    var todos = res.data || [];
-
-    // Stats generales
-    var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
-    var semTotal = 0, semEnt = 0, hoyTotal = 0, hoyEnt = 0;
-
+  // Cargar pedidos y estado entregado desde Supabase
+  Promise.all([
+    sb.from('pedidos').select('*').order('horario',{ascending:true}),
+    sb.from('pedidos').select('id,entregado')
+  ]).then(function(results) {
+    var todos = results[0].data || [];
+    delivTodosCache = todos;
+    // Construir mapa de entregados
+    delivEntregados = {};
     todos.forEach(function(p) {
-      if(dias.indexOf(p.dia_semana) > -1) {
-        semTotal += p.cantidad;
-        if(delivEntregados[p.id]) semEnt += p.cantidad;
-        if(p.dia_semana === delivDiaActivo) {
-          hoyTotal += p.cantidad;
-          if(delivEntregados[p.id]) hoyEnt += p.cantidad;
-        }
-      }
+      if(p.entregado) delivEntregados[p.id] = true;
     });
-
-    gi('delivHoy').textContent    = (hoyTotal - hoyEnt) + ' / ' + hoyTotal;
-    gi('delivSemana').textContent = (semTotal - semEnt) + ' / ' + semTotal;
-
-    // Filtrar por dia activo
-    var pedidosDia = todos.filter(function(p) { return p.dia_semana === delivDiaActivo; });
-
-    if(!pedidosDia.length) {
-      gi('delivLista').innerHTML = '<p style="color:var(--t3);text-align:center;padding:40px;font-size:12px;letter-spacing:1px;text-transform:uppercase">Sin pedidos para este día</p>';
-      return;
-    }
-
-    // Agrupar por cliente (mismo nombre + direccion)
-    var agrupados = {};
-    pedidosDia.forEach(function(p) {
-      var key = p.id;
-      agrupados[key] = p;
-    });
-
-    gi('delivLista').innerHTML = Object.values(agrupados).map(function(p) {
-      var entregado = delivEntregados[p.id] ? true : false;
-      var checkIcon = entregado
-        ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        : '';
-      return '<div class="delivery-card' + (entregado ? ' entregado' : '') + '" id="dc-' + p.id + '">' +
-        '<div class="delivery-check" onclick="toggleEntrega(\'' + p.id + '\')" >' + checkIcon + '</div>' +
-        '<div class="delivery-info">' +
-          '<div class="delivery-nombre">' + (p.user_nombre || '-') + '</div>' +
-          '<div class="delivery-dir">' + (p.direccion || 'Sin dirección') + '</div>' +
-          '<div class="delivery-tel">' + (p.user_telefono || '-') + '</div>' +
-          (p.personalizacion ? '<div style="font-size:11px;color:var(--brown);margin-top:3px;font-weight:600">✏️ ' + p.personalizacion + '</div>' : '') +
-        '</div>' +
-        '<div style="text-align:right;flex-shrink:0">' +
-          '<div class="delivery-qty">' + p.cantidad + '</div>' +
-          '<div class="delivery-horario">' + (p.horario || '') + '</div>' +
-        '</div>' +
-      '</div>';
-    }).join('');
+    renderDelivery();
   });
 }
 
-function toggleEntrega(id) {
-  if(delivEntregados[id]) {
-    delete delivEntregados[id];
-  } else {
-    delivEntregados[id] = true;
+function renderDelivery() {
+  var todos = delivTodosCache;
+  var dias = ['Lunes','Martes','Miércoles','Jueves','Viernes'];
+  var semTotal=0, semEnt=0, hoyTotal=0, hoyEnt=0;
+
+  todos.forEach(function(p) {
+    if(dias.indexOf(p.dia_semana) > -1) {
+      semTotal += p.cantidad;
+      if(delivEntregados[p.id]) semEnt += p.cantidad;
+      if(p.dia_semana === delivDiaActivo) {
+        hoyTotal += p.cantidad;
+        if(delivEntregados[p.id]) hoyEnt += p.cantidad;
+      }
+    }
+  });
+
+  gi('delivHoy').textContent    = (hoyTotal-hoyEnt) + ' / ' + hoyTotal;
+  gi('delivSemana').textContent = (semTotal-semEnt) + ' / ' + semTotal;
+
+  var pedidosDia = todos.filter(function(p){ return p.dia_semana === delivDiaActivo; });
+
+  if(!pedidosDia.length) {
+    gi('delivLista').innerHTML = '<p style="color:var(--t3);text-align:center;padding:40px;font-size:12px;letter-spacing:1px;text-transform:uppercase">Sin pedidos para este día</p>';
+    return;
   }
-  localStorage.setItem('delivEntregados', JSON.stringify(delivEntregados));
-  cargarDelivery();
+
+  gi('delivLista').innerHTML = pedidosDia.map(function(p) {
+    var ent = delivEntregados[p.id] ? true : false;
+    var check = ent ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
+    return '<div class="delivery-card' + (ent?' entregado':'') + '" id="dc-' + p.id + '">' +
+      '<div class="delivery-check" onclick="toggleEntrega(\'' + p.id + '\')">' + check + '</div>' +
+      '<div class="delivery-info">' +
+        '<div class="delivery-nombre">' + (p.user_nombre||'-') + '</div>' +
+        '<div class="delivery-dir">'    + (p.direccion||'Sin dirección') + '</div>' +
+        '<div class="delivery-tel">'    + (p.user_telefono||'-') + '</div>' +
+        (p.personalizacion ? '<div style="font-size:11px;color:var(--brown);margin-top:3px;font-weight:600">✏️ ' + p.personalizacion + '</div>' : '') +
+      '</div>' +
+      '<div style="text-align:right;flex-shrink:0">' +
+        '<div class="delivery-qty">' + p.cantidad + '</div>' +
+        '<div class="delivery-horario">' + (p.horario||'') + '</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function toggleEntrega(id) {
+  var nuevoEstado = !delivEntregados[id];
+  if(nuevoEstado) { delivEntregados[id] = true; }
+  else { delete delivEntregados[id]; }
+  // Actualizar en Supabase
+  sb.from('pedidos').update({entregado: nuevoEstado}).eq('id', id).then(function(res) {
+    if(res.error) { toast('Error al actualizar: ' + res.error.message, 'red'); return; }
+    // Actualizar cache local
+    delivTodosCache.forEach(function(p){ if(p.id===id) p.entregado = nuevoEstado; });
+    renderDelivery();
+  });
 }
 
 /* ══════ MENU SEMANAL ══════ */
