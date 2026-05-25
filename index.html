@@ -659,11 +659,11 @@ html, body { height:100%; font-family:var(--f); background:var(--black); color:v
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:24px">
         <div class="stat-card" style="cursor:default">
           <div class="stat-val" id="delivHoy">-</div>
-          <div class="stat-lbl">Pendientes hoy</div>
+          <div class="stat-lbl">Entregadas hoy</div>
         </div>
         <div class="stat-card" style="cursor:default;border-top-color:var(--t3)">
           <div class="stat-val" id="delivSemana" style="color:var(--t3)">-</div>
-          <div class="stat-lbl">Pendientes semana</div>
+          <div class="stat-lbl">Entregadas semana</div>
         </div>
       </div>
 
@@ -1368,8 +1368,8 @@ function renderDelivery() {
     }
   });
 
-  gi('delivHoy').textContent    = (hoyTotal-hoyEnt) + ' / ' + hoyTotal;
-  gi('delivSemana').textContent = (semTotal-semEnt) + ' / ' + semTotal;
+  gi('delivHoy').textContent    = hoyEnt + ' / ' + hoyTotal;
+  gi('delivSemana').textContent = semEnt + ' / ' + semTotal;
 
   var pedidosDia = todos.filter(function(p){ return p.dia_semana === delivDiaActivo; });
 
@@ -1380,18 +1380,27 @@ function renderDelivery() {
 
   gi('delivLista').innerHTML = pedidosDia.map(function(p) {
     var ent = delivEntregados[p.id] ? true : false;
-    var check = ent ? '<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l4 4 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
-    return '<div class="delivery-card' + (ent?' entregado':'') + '" id="dc-' + p.id + '">' +
-      '<div class="delivery-check" onclick="toggleEntrega(\'' + p.id + '\')">' + check + '</div>' +
-      '<div class="delivery-info">' +
-        '<div class="delivery-nombre">' + (p.user_nombre||'-') + '</div>' +
-        '<div class="delivery-dir">'    + (p.direccion||'Sin dirección') + '</div>' +
-        '<div class="delivery-tel">'    + (p.user_telefono||'-') + '</div>' +
-        (p.personalizacion ? '<div style="font-size:11px;color:var(--brown);margin-top:3px;font-weight:600">✏️ ' + p.personalizacion + '</div>' : '') +
+    var checkStyle = ent
+      ? 'width:32px;height:32px;min-width:32px;border-radius:6px;border:2px solid #2ecc71;background:#2ecc71;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0'
+      : 'width:32px;height:32px;min-width:32px;border-radius:6px;border:2px solid #555;background:#1e1e1e;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0';
+    var check = ent ? '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-6" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>' : '';
+    var cardStyle = ent
+      ? 'background:#141414;border:1px solid #2a2a2a;border-radius:8px;padding:18px 20px;margin-bottom:8px;display:flex;align-items:center;gap:16px;opacity:0.35'
+      : 'background:#1a1a1a;border:1px solid #333;border-radius:8px;padding:18px 20px;margin-bottom:8px;display:flex;align-items:center;gap:16px';
+    var nombreStyle = ent
+      ? 'font-weight:800;font-size:14px;color:#888;text-transform:uppercase;letter-spacing:.5px;text-decoration:line-through'
+      : 'font-weight:800;font-size:14px;color:#f0f0f0;text-transform:uppercase;letter-spacing:.5px';
+    return '<div style="' + cardStyle + '" id="dc-' + p.id + '">' +
+      '<div style="' + checkStyle + '" onclick="toggleEntrega(\'' + p.id + '\')">' + check + '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="' + nombreStyle + '">' + (p.user_nombre||'-') + '</div>' +
+        '<div style="font-size:12px;color:#666;margin-top:3px">' + (p.direccion||'Sin dirección') + '</div>' +
+        '<div style="font-size:12px;color:#c17f24;margin-top:2px;font-weight:600">' + (p.user_telefono||'-') + '</div>' +
+        (p.personalizacion ? '<div style="font-size:11px;color:#c17f24;margin-top:3px;font-weight:600">✏️ ' + p.personalizacion + '</div>' : '') +
       '</div>' +
       '<div style="text-align:right;flex-shrink:0">' +
-        '<div class="delivery-qty">' + p.cantidad + '</div>' +
-        '<div class="delivery-horario">' + (p.horario||'') + '</div>' +
+        '<div style="font-size:24px;font-weight:900;color:' + (ent?'#555':'#c17f24') + ';letter-spacing:-1px">' + p.cantidad + '</div>' +
+        '<div style="font-size:10px;font-weight:700;color:#555;letter-spacing:1px;text-transform:uppercase">' + (p.horario||'') + '</div>' +
       '</div>' +
     '</div>';
   }).join('');
