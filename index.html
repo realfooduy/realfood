@@ -942,19 +942,26 @@ function loadAdminTable(tab) {
   gi('adminTableBody').innerHTML = '<tr><td colspan="11" class="center" style="padding:40px;color:var(--t3)">Cargando...</td></tr>';
   var q = sb.from('pedidos').select('*').order('horario',{ascending:true});
   var diasValidos = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
-  if(diasValidos.indexOf(tab) !== -1) {
-    if(tab === 'Miercoles') {
-      q = q.or('dia_semana.eq.Miercoles,dia_semana.eq.Miércoles');
-    } else {
-      q = q.eq('dia_semana', tab);
-    }
-  }
+  // Note: filter client-side for Miercoles due to accent inconsistency in DB
   q.then(function(res) {
-    if(res.error || !res.data || !res.data.length) {
+    if(res.error) {
       gi('adminTableBody').innerHTML = '<tr><td colspan="11" class="center" style="padding:40px;color:var(--t3)">Sin pedidos.</td></tr>';
       return;
     }
-    gi('adminTableBody').innerHTML = res.data.map(function(p) {
+    var data = res.data || [];
+    // Client-side filter by day (handles accent inconsistency)
+    if(diasValidos.indexOf(tab) !== -1) {
+      data = data.filter(function(p) {
+        var dN = p.dia_semana ? p.dia_semana.normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+        var tN = tab.normalize('NFD').replace(/[̀-ͯ]/g,'');
+        return dN === tN;
+      });
+    }
+    if(!data.length) {
+      gi('adminTableBody').innerHTML = '<tr><td colspan="11" class="center" style="padding:40px;color:var(--t3)">Sin pedidos.</td></tr>';
+      return;
+    }
+    gi('adminTableBody').innerHTML = data.map(function(p) {
       var estadoBadge = p.estado==='confirmado' ? '<span class="badge paid">Confirmado</span>' : '<span class="badge pending">Pendiente</span>';
       var confirmarBtn = p.estado!=='confirmado' ? '<button class="btn-sm green" onclick="confirmarPago(\'' + p.id + '\')">Confirmar</button>' : '';
       return '<tr>' +
@@ -1024,8 +1031,9 @@ function renderDelivery() {
     if(dias.indexOf(p.dia_semana)>-1) {
       semTotal+=p.cantidad;
       if(delivEntregados[p.id]) semEnt+=p.cantidad;
-      var diaOkD = delivDiaActivo==='Miércoles' ? (p.dia_semana==='Miércoles'||p.dia_semana==='Miercoles') : p.dia_semana===delivDiaActivo;
-      if(diaOkD) {
+      var dN2 = p.dia_semana ? p.dia_semana.normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+      var tN2 = delivDiaActivo.normalize('NFD').replace(/[̀-ͯ]/g,'');
+      if(dN2===tN2) {
         hoyTotal+=p.cantidad;
         if(delivEntregados[p.id]) hoyEnt+=p.cantidad;
       }
@@ -1036,8 +1044,9 @@ function renderDelivery() {
   var propinasHoy = todos.filter(function(p){ return p.dia_semana===delivDiaActivo; }).reduce(function(s,p){ return s+(p.propina||0); },0);
   if(gi('delivPropinas')) gi('delivPropinas').textContent = '$' + propinasHoy.toLocaleString('es-UY');
   var pedidosDia = todos.filter(function(p){
-    if(delivDiaActivo==='Miércoles') return p.dia_semana==='Miércoles'||p.dia_semana==='Miercoles';
-    return p.dia_semana===delivDiaActivo;
+    var dN = p.dia_semana ? p.dia_semana.normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+    var tN = delivDiaActivo.normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return dN === tN;
   });
   if(!pedidosDia.length) {
     gi('delivLista').innerHTML = '<p style="color:var(--t3);text-align:center;padding:40px;font-size:12px;letter-spacing:1px;text-transform:uppercase">Sin pedidos para este dia</p>';
@@ -1289,8 +1298,9 @@ function renderRider() {
   var todos = riderTodosCache;
   var hoyTotal=0, hoyEnt=0, propinasHoy=0;
   todos.forEach(function(p) {
-    var diaOk = riderDiaActivo==='Miércoles' ? (p.dia_semana==='Miércoles'||p.dia_semana==='Miercoles') : p.dia_semana===riderDiaActivo;
-    if(diaOk) {
+    var dNr = p.dia_semana ? p.dia_semana.normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+    var tNr = riderDiaActivo.normalize('NFD').replace(/[̀-ͯ]/g,'');
+    if(dNr===tNr) {
       hoyTotal+=p.cantidad;
       if(riderEntregados[p.id]) hoyEnt+=p.cantidad;
       propinasHoy+=(p.propina||0);
@@ -1300,8 +1310,9 @@ function renderRider() {
   gi('riderPropinas').textContent = '$' + propinasHoy.toLocaleString('es-UY');
 
   var pedidosDia = todos.filter(function(p){
-    if(riderDiaActivo==='Miércoles') return p.dia_semana==='Miércoles'||p.dia_semana==='Miercoles';
-    return p.dia_semana===riderDiaActivo;
+    var dN = p.dia_semana ? p.dia_semana.normalize('NFD').replace(/[̀-ͯ]/g,'') : '';
+    var tN = riderDiaActivo.normalize('NFD').replace(/[̀-ͯ]/g,'');
+    return dN === tN;
   });
   if(!pedidosDia.length) {
     gi('riderLista').innerHTML = '<p style="color:var(--t3);text-align:center;padding:40px;font-size:12px;letter-spacing:1px;text-transform:uppercase">Sin pedidos para este dia</p>';
