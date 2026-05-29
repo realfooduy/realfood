@@ -780,24 +780,59 @@ function switchAdminSection(s){
   if(s==='menu') cargarMenuActual();
   if(s==='delivery') initDelivery();
 }
+var SEMANA4_FECHAS={'Lunes':'L 26/5','Martes':'M 27/5','Miercoles':'X 28/5','Jueves':'J 29/5','Viernes':'V 30/5'};
+var SEMANA5_FECHAS={'Lunes':'L 1/6','Martes':'M 2/6','Miercoles':'X 3/6','Jueves':'J 4/6','Viernes':'V 5/6'};
+
 function loadAdminStats(){
   sb.from('pedidos').select('cantidad,subtotal,estado,dia_semana,semana_key').then(function(res){
     var todos=res.data||[];
-    var statsHtml=DIAS.map(function(dia){
-      var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); }).reduce(function(s,p){ return s+p.cantidad; },0);
-      return '<div class="stat-card" id="stat-'+dia+'" onclick="adminTab(\''+dia+'\')" ><div class="stat-val">'+cant+'</div><div class="stat-lbl">'+dia+'</div></div>';
+    var html='';
+
+    // Semana 4
+    html+='<div style="font-size:9px;font-weight:800;color:var(--t3);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;grid-column:1/-1">Semana 4 — 26 al 30 mayo</div>';
+    html+=DIAS.map(function(dia){
+      var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia)&&p.semana_key==='semana4'; }).reduce(function(s,p){ return s+p.cantidad; },0);
+      return '<div class="stat-card" onclick="adminTabSemana(\''+dia+'\',\'semana4\')"><div class="stat-val">'+cant+'</div><div class="stat-lbl">'+(SEMANA4_FECHAS[dia]||dia)+'</div></div>';
     }).join('');
-    // Stats por semana
-    var semanas={};
-    todos.forEach(function(p){ var k=p.semana_key||'?'; if(!semanas[k]) semanas[k]=0; semanas[k]+=p.cantidad; });
-    Object.keys(semanas).sort().forEach(function(k){
-      var lbl=k==='semana4'?'Sem.4':k==='semana5'?'Sem.5':k;
-      statsHtml+='<div class="stat-card" style="border-top-color:var(--green);cursor:default"><div class="stat-val" style="color:var(--green)">'+semanas[k]+'</div><div class="stat-lbl">'+lbl+'</div></div>';
-    });
+
+    // Semana 5
+    html+='<div style="font-size:9px;font-weight:800;color:var(--green);letter-spacing:1px;text-transform:uppercase;margin-bottom:6px;grid-column:1/-1;margin-top:12px">Semana 5 — 1 al 5 junio</div>';
+    html+=DIAS.map(function(dia){
+      var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia)&&p.semana_key==='semana5'; }).reduce(function(s,p){ return s+p.cantidad; },0);
+      return '<div class="stat-card" style="border-top-color:var(--green)" onclick="adminTabSemana(\''+dia+'\',\'semana5\')"><div class="stat-val" style="color:var(--green)">'+cant+'</div><div class="stat-lbl">'+(SEMANA5_FECHAS[dia]||dia)+'</div></div>';
+    }).join('');
+
     var total=todos.reduce(function(s,p){ return s+p.cantidad; },0);
-    statsHtml+='<div class="stat-card stat-total" onclick="adminTab(\'todos\')" id="stat-todos"><div class="stat-val">'+total+'</div><div class="stat-lbl">Total</div></div>';
-    gi('adminStats').innerHTML=statsHtml;
-    var el=gi('stat-'+adminMode)||gi('stat-todos'); if(el) el.classList.add('active');
+    html+='<div style="grid-column:1/-1;margin-top:8px"><div class="stat-card stat-total" style="max-width:140px;cursor:pointer" onclick="adminTabSemana(\'todos\',\'todas\')"><div class="stat-val">'+total+'</div><div class="stat-lbl">Total viandas</div></div></div>';
+
+    gi('adminStats').innerHTML=html;
+  });
+}
+
+function adminTabSemana(dia, semana){
+  gi('adminTableBody').innerHTML='<tr><td colspan="11" class="center" style="padding:30px;color:var(--t3)">Cargando...</td></tr>';
+  var q=sb.from('pedidos').select('*').order('horario',{ascending:true});
+  if(semana!=='todas') q=q.eq('semana_key',semana);
+  q.then(function(res){
+    var data=res.data||[];
+    if(dia!=='todos') data=data.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); });
+    if(!data.length){ gi('adminTableBody').innerHTML='<tr><td colspan="11" class="center" style="padding:30px;color:var(--t3)">Sin pedidos.</td></tr>'; return; }
+    gi('adminTableBody').innerHTML=data.map(function(p){
+      var est=p.estado==='confirmado'?'<span class="badge paid">OK</span>':'<span class="badge pending">Pend.</span>';
+      var conf=p.estado!=='confirmado'?'<button class="btn-sm green" onclick="confirmarPago(\''+p.id+'\')">OK</button>':'';
+      return '<tr>'+
+        '<td><strong>'+p.user_nombre+'</strong><br><span style="color:var(--t3);font-size:10px">'+p.user_email+'</span><br><span style="color:var(--t3);font-size:10px">'+(p.user_telefono||'')+'</span></td>'+
+        '<td><strong>'+p.dia_semana+'</strong><br><span style="color:var(--t3);font-size:10px">'+(p.semana_label||p.semana_key||'')+'</span></td>'+
+        '<td style="font-size:11px;max-width:130px">'+(p.menu_dia||'-')+'</td>'+
+        '<td style="text-align:center;font-size:18px;font-weight:900;color:var(--brown)">'+p.cantidad+'</td>'+
+        '<td>'+(p.horario||'-')+'</td>'+
+        '<td style="font-size:11px;max-width:110px">'+(p.direccion||'-')+(p.notas?'<br><span style="color:var(--t3)">'+p.notas+'</span>':'')+'</td>'+
+        '<td style="font-size:11px;color:var(--brown)">'+(p.personalizacion||'-')+'</td>'+
+        '<td style="font-weight:700">$'+p.precio_unitario+'</td>'+
+        '<td>'+est+'</td><td>'+conf+'</td>'+
+        '<td><button class="btn-sm" style="border-color:var(--warn);color:var(--warn)" onclick="eliminarPedido(\''+p.id+'\')">x</button></td>'+
+      '</tr>';
+    }).join('');
   });
 }
 function adminTab(tab){
