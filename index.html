@@ -609,9 +609,16 @@ function saveProfile() {
 }
 
 function iniciarMenuDesdeStorage() {
+  // El menu del codigo siempre tiene prioridad
+  // El localStorage solo se usa si el admin lo actualizo manualmente desde el panel
   try {
     var guardado = localStorage.getItem('menuSemanal');
-    if(guardado) { var menu = JSON.parse(guardado); MENUS[SEMANAS_ORDEN[0]].dias = menu; }
+    var keyGuardada = localStorage.getItem('menuSemanaKey');
+    // Solo aplicar si es para la misma semana activa
+    if(guardado && keyGuardada === SEMANAS_ORDEN[0]) {
+      var menu = JSON.parse(guardado);
+      MENUS[SEMANAS_ORDEN[0]].dias = menu;
+    }
   } catch(e) {}
 }
 
@@ -1401,6 +1408,7 @@ function guardarMenuSemana() {
   if(!lunes||!martes||!miercoles||!jueves||!viernes) { toast('Completa todos los dias.','red'); return; }
   var nuevoMenu={'Lunes':lunes,'Martes':martes,'Miercoles':miercoles,'Jueves':jueves,'Viernes':viernes};
   localStorage.setItem('menuSemanal',JSON.stringify(nuevoMenu));
+  localStorage.setItem('menuSemanaKey', SEMANAS_ORDEN[0]);
   MENUS[SEMANAS_ORDEN[0]].dias=nuevoMenu;
   toast('Menu guardado! Los clientes ya ven el nuevo menu.','green');
 }
