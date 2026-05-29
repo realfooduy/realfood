@@ -608,6 +608,17 @@ function saveProfile() {
   });
 }
 
+function limpiarStorageViejo() {
+  try {
+    var keyGuardada = localStorage.getItem('menuSemanaKey');
+    if(keyGuardada && keyGuardada !== SEMANAS_ORDEN[0]) {
+      localStorage.removeItem('menuSemanal');
+      localStorage.removeItem('menuSemanaKey');
+      localStorage.removeItem('pedidoPendiente');
+    }
+  } catch(e) {}
+}
+
 function iniciarMenuDesdeStorage() {
   // El menu del codigo siempre tiene prioridad
   // El localStorage solo se usa si el admin lo actualizo manualmente desde el panel
@@ -623,6 +634,7 @@ function iniciarMenuDesdeStorage() {
 }
 
 function loadClientScreen() {
+  limpiarStorageViejo();
   iniciarMenuDesdeStorage();
   showScreen('screenClient');
   buildSemanaSel();
@@ -681,6 +693,12 @@ function diaDisponible(nombreDia) {
   var diaHoy = hoy.getDay();
   var ahora = hoy.getHours() * 60 + hoy.getMinutes();
   var medioDia = 12 * 60;
+
+  // Si el menu es para la semana proxima (hoy es sabado o domingo antes de que empiece),
+  // todos los dias estan disponibles salvo los cierres normales.
+  // La semana laboral empieza el lunes. Si hoy es lunes a viernes,
+  // y el menu es semana5 (proxima), solo cerramos segun la regla normal.
+
   var mapCierre = {
     'Lunes':     { dia:0, hora:17*60 },
     'Martes':    { dia:1, hora:medioDia },
@@ -688,12 +706,20 @@ function diaDisponible(nombreDia) {
     'Jueves':    { dia:3, hora:medioDia },
     'Viernes':   { dia:4, hora:medioDia }
   };
-  var nombreNorm = nombreDia.replace('Mi\u00e9rcoles','Miercoles');
+
+  var nombreNorm = nombreDia.normalize('NFD').replace(/[̀-ͯ]/g,'');
   var cierre = mapCierre[nombreNorm];
   if(!cierre) return true;
+
+  // Solo cerrar si hoy ES exactamente el dia de cierre y ya paso la hora
   if(diaHoy === cierre.dia && ahora >= cierre.hora) return false;
-  if(diaHoy > cierre.dia && diaHoy >= 1 && diaHoy <= 5 && cierre.dia >= 1) return false;
+
+  // Y si hoy ya paso ese dia de cierre en la semana actual (lun-vie)
+  if(diaHoy >= 1 && diaHoy <= 5 && cierre.dia >= 1 && diaHoy > cierre.dia) return false;
+
+  // Si el lunes ya cerro (domingo paso las 17) -> lunes cerrado
   if(cierre.dia === 0 && diaHoy >= 1 && diaHoy <= 5) return false;
+
   return true;
 }
 
@@ -900,6 +926,7 @@ function loadHistorial() {
 
 /* ADMIN */
 function loadAdminScreen() {
+  limpiarStorageViejo();
   iniciarMenuDesdeStorage();
   showScreen('screenAdmin');
   adminMode = 'todos';
