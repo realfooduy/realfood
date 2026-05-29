@@ -487,18 +487,18 @@ var PRECIO_DESC   = 290;
 var UMBRAL_DESC   = 3;
 
 var MENUS = {
-  semana4: {
+  semana5: {
     label: 'Menu Semanal',
     dias: {
-      'Lunes':     'Bondiola con boniato y huevo a la plancha',
-      'Martes':    'Colita de cuadril al horno con papas y boniatos - Ensalada de zanahoria, remolacha y palta',
-      'Miercoles': 'Milanesas de carne con revuelto de zapallitos y remolacha',
-      'Jueves':    'Pollo a la plancha con pure de calabaza y palta',
-      'Viernes':   'Chuleton con remolacha, brocoli y huevos a la plancha'
+      'Lunes':     'Pollo salteado con morron, cebolla, zanahoria, papas y huevo duro',
+      'Martes':    'Cazuela de lentejas',
+      'Miercoles': 'Pastel de carne de boniato',
+      'Jueves':    'Colita de cuadril con tortilla de espinaca',
+      'Viernes':   'Bondiola con pure de papas, brocoli'
     }
   }
 };
-var SEMANAS_ORDEN = ['semana4'];
+var SEMANAS_ORDEN = ['semana5'];
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
 var BANCOS = [
@@ -1231,6 +1231,28 @@ function eliminarSemana(id) {
   renderContabilidad(); toast('Semana eliminada.','');
 }
 function toggleContaDetalle(id) { var el=gi('conta-det-'+id); if(el) el.classList.toggle('open'); }
+function recalcularSemana(id, semanaKey) {
+  toast('Recalculando...', '');
+  sb.from('pedidos').select('cantidad,subtotal').eq('semana_key', semanaKey).then(function(res) {
+    var pedidos = res.data || [];
+    var ingresos = pedidos.reduce(function(s,p){ return s+p.subtotal; }, 0);
+    var viandas  = pedidos.reduce(function(s,p){ return s+p.cantidad; }, 0);
+    var data = getContaData();
+    var idx = data.findIndex(function(s){ return s.id===id; });
+    if(idx > -1) {
+      data[idx].ingresos = ingresos;
+      data[idx].viandas  = viandas;
+      data[idx].ganancia = ingresos - data[idx].totalGastos;
+      saveContaData(data);
+      toast('Recalculado! ' + viandas + ' viandas, $' + ingresos.toLocaleString('es-UY'), 'green');
+      renderContabilidad();
+      // Reopen the detail
+      var det = gi('conta-det-' + id);
+      if(det) det.classList.add('open');
+    }
+  });
+}
+
 function renderContabilidad() {
   var data=getContaData(); var wrap=gi('contaLista');
   if(!data.length) { wrap.innerHTML='<p style="color:var(--t3);text-align:center;padding:40px;font-size:12px;letter-spacing:1px;text-transform:uppercase">No hay semanas registradas.</p>'; return; }
@@ -1249,8 +1271,9 @@ function renderContabilidad() {
         '<div class="conta-row"><span class="l">Alimentos</span><span class="r neg">-$'+sem.alimentos.toLocaleString('es-UY')+'</span></div>' +
         '<div class="conta-row"><span class="l">Servicios</span><span class="r neg">-$'+sem.servicios.toLocaleString('es-UY')+'</span></div>' +
         '<div class="conta-total-row"><span style="color:var(--brown)">Ganancia neta</span><span class="'+ganClass+'">'+ganSign+'$'+sem.ganancia.toLocaleString('es-UY')+'</span></div>' +
-        '<div style="display:flex;gap:8px;margin-top:8px">' +
+        '<div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">' +
           '<button class="btn-sm solid" onclick="editarSemana(\'' + sem.id + '\')">Editar</button>' +
+          '<button class="btn-sm" style="border-color:var(--green);color:var(--green)" onclick="recalcularSemana(\'' + sem.id + '\', \'' + SEMANAS_ORDEN[0] + '\')">Recalcular</button>' +
           '<button class="btn-sm" style="border-color:var(--warn);color:var(--warn)" onclick="eliminarSemana(\'' + sem.id + '\')">Eliminar</button>' +
         '</div>' +
       '</div>' +
