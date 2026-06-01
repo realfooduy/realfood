@@ -608,16 +608,35 @@ function diaDisponible(nombreDia) {
   var ahora=hoy.getHours()*60+hoy.getMinutes();
   var medioDia=12*60;
   var n=normDia(nombreDia);
-  // Lunes proximo cierra domingo(0) de esta semana a las 17
-  if(n==='Lunes'     && diaHoy===0 && ahora>=17*60) return false;
-  // Martes proximo cierra lunes(1) de esta semana a las 12
-  if(n==='Martes'    && diaHoy===1 && ahora>=medioDia) return false;
-  // Miercoles proximo cierra martes(2) de esta semana a las 12
+  // Regla: cada dia de la semana proxima cierra el dia anterior de ESA semana.
+  // Como la semana proxima aun no empezo, los cierres son:
+  // Lunes(prox) cierra: dom(0) 17hs de esta semana, O si ya paso el lunes(1) esta semana
+  // Martes(prox) cierra: lun(1) 12hs, O si ya paso martes(2) esta semana
+  // Miercoles(prox) cierra: mar(2) 12hs, O si ya paso miercoles(3) esta semana
+  // Jueves(prox) cierra: mie(3) 12hs, O si ya paso jueves(4) esta semana
+  // Viernes(prox) cierra: jue(4) 12hs de esta semana — jueves(5) y viernes(5) ya no aplica
+  // porque el viernes de la prox semana cierra el JUEVES DE LA PROX SEMANA que todavia no llego
+
+  // Lunes: cerrado si domingo>17 o si ya es lunes o despues (esta semana)
+  if(n==='Lunes' && diaHoy===0 && ahora>=17*60) return false;
+  if(n==='Lunes' && diaHoy>=1 && diaHoy<=5) return false;
+
+  // Martes: cerrado si lunes>12 o si ya paso el martes esta semana
+  if(n==='Martes' && diaHoy===1 && ahora>=medioDia) return false;
+  if(n==='Martes' && diaHoy>=2 && diaHoy<=5) return false;
+
+  // Miercoles: cerrado si martes>12 o si ya paso miercoles esta semana
   if(n==='Miercoles' && diaHoy===2 && ahora>=medioDia) return false;
-  // Jueves proximo cierra miercoles(3) de esta semana a las 12
-  if(n==='Jueves'    && diaHoy===3 && ahora>=medioDia) return false;
-  // Viernes proximo cierra jueves(4) de esta semana a las 12
-  if(n==='Viernes'   && diaHoy===4 && ahora>=medioDia) return false;
+  if(n==='Miercoles' && diaHoy>=3 && diaHoy<=5) return false;
+
+  // Jueves: cerrado si miercoles>12 o si ya paso jueves esta semana
+  if(n==='Jueves' && diaHoy===3 && ahora>=medioDia) return false;
+  if(n==='Jueves' && diaHoy>=4 && diaHoy<=5) return false;
+
+  // Viernes: cierra el JUEVES DE LA SEMANA PROXIMA a las 12
+  // Ese jueves todavia no llego, asi que viernes SIEMPRE disponible esta semana
+  // Solo cerraria si hoy fuera jueves de la semana proxima, lo que no aplica aqui.
+
   return true;
 }
 
@@ -732,9 +751,11 @@ function enviarPedido(){
   var dias=Object.keys(selDias); if(!dias.length){ toast('Elegi al menos un dia.','red'); return; }
   for(var i=0;i<dias.length;i++){ if(!selDias[dias[i]].hora){ toast('Elegi horario para el '+dias[i]+'.','red'); return; } }
   var calc=calcPrecio();
-  var rows=dias.map(function(dia){
+  var rows=dias.map(function(dia, idx){
     var d=selDias[dia], info=MENU_DIAS[dia]||{};
-    return {user_id:currentUser.id,user_email:currentUser.email,user_nombre:currentProfile.nombre,user_telefono:currentProfile.telefono,semana_key:SEMANA_KEY,semana_label:SEMANA_LABEL,dia_semana:dia,menu_dia:info.plato||'',cantidad:d.qty,precio_unitario:calc.precio,subtotal:d.qty*calc.precio,horario:d.hora,direccion:d.dir||currentProfile.direccion,personalizacion:d.personalizacion,notas:d.notas,propina:propinaSeleccionada,pago_confirmado:true,estado:'confirmado'};
+    // Propina solo en el primer dia del pedido
+    var propina = idx===0 ? propinaSeleccionada : 0;
+    return {user_id:currentUser.id,user_email:currentUser.email,user_nombre:currentProfile.nombre,user_telefono:currentProfile.telefono,semana_key:SEMANA_KEY,semana_label:SEMANA_LABEL,dia_semana:dia,menu_dia:info.plato||'',cantidad:d.qty,precio_unitario:calc.precio,subtotal:d.qty*calc.precio,horario:d.hora,direccion:d.dir||currentProfile.direccion,personalizacion:d.personalizacion,notas:d.notas,propina:propina,pago_confirmado:true,estado:'confirmado'};
   });
   sb.from('pedidos').insert(rows).then(function(res){
     if(res.error){ toast('Error: '+res.error.message,'red'); return; }
