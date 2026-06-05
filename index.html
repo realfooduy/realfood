@@ -604,38 +604,50 @@ function clientTab(tab) {
 // para el dia objetivo de la SEMANA PROXIMA.
 function diaDisponible(nombreDia) {
   var hoy=new Date();
-  var diaHoy=hoy.getDay(); // 0=dom
+  var diaHoy=hoy.getDay(); // 0=dom,1=lun,2=mar,3=mie,4=jue,5=vie,6=sab
   var ahora=hoy.getHours()*60+hoy.getMinutes();
   var medioDia=12*60;
   var n=normDia(nombreDia);
-  // Regla: cada dia de la semana proxima cierra el dia anterior de ESA semana.
-  // Como la semana proxima aun no empezo, los cierres son:
-  // Lunes(prox) cierra: dom(0) 17hs de esta semana, O si ya paso el lunes(1) esta semana
-  // Martes(prox) cierra: lun(1) 12hs, O si ya paso martes(2) esta semana
-  // Miercoles(prox) cierra: mar(2) 12hs, O si ya paso miercoles(3) esta semana
-  // Jueves(prox) cierra: mie(3) 12hs, O si ya paso jueves(4) esta semana
-  // Viernes(prox) cierra: jue(4) 12hs de esta semana — jueves(5) y viernes(5) ya no aplica
-  // porque el viernes de la prox semana cierra el JUEVES DE LA PROX SEMANA que todavia no llego
 
-  // Lunes: cerrado si domingo>17 o si ya es lunes o despues (esta semana)
-  if(n==='Lunes' && diaHoy===0 && ahora>=17*60) return false;
-  if(n==='Lunes' && diaHoy>=1 && diaHoy<=5) return false;
+  // Sabado(6): todos disponibles
+  if(diaHoy===6) return true;
 
-  // Martes: cerrado si lunes>12 o si ya paso el martes esta semana
-  if(n==='Martes' && diaHoy===1 && ahora>=medioDia) return false;
-  if(n==='Martes' && diaHoy>=2 && diaHoy<=5) return false;
+  // Domingo(0): todos disponibles hasta las 17, despues cierra Lunes
+  if(diaHoy===0) {
+    if(n==='Lunes' && ahora>=17*60) return false;
+    return true;
+  }
 
-  // Miercoles: cerrado si martes>12 o si ya paso miercoles esta semana
-  if(n==='Miercoles' && diaHoy===2 && ahora>=medioDia) return false;
-  if(n==='Miercoles' && diaHoy>=3 && diaHoy<=5) return false;
+  // Lunes(1): Lunes cerrado. Martes cierra a las 12.
+  if(diaHoy===1) {
+    if(n==='Lunes') return false;
+    if(n==='Martes' && ahora>=medioDia) return false;
+    return true;
+  }
 
-  // Jueves: cerrado si miercoles>12 o si ya paso jueves esta semana
-  if(n==='Jueves' && diaHoy===3 && ahora>=medioDia) return false;
-  if(n==='Jueves' && diaHoy>=4 && diaHoy<=5) return false;
+  // Martes(2): Lunes y Martes cerrados. Miercoles cierra a las 12.
+  if(diaHoy===2) {
+    if(n==='Lunes'||n==='Martes') return false;
+    if(n==='Miercoles' && ahora>=medioDia) return false;
+    return true;
+  }
 
-  // Viernes: cierra el JUEVES DE LA SEMANA PROXIMA a las 12
-  // Ese jueves todavia no llego, asi que viernes SIEMPRE disponible esta semana
-  // Solo cerraria si hoy fuera jueves de la semana proxima, lo que no aplica aqui.
+  // Miercoles(3): Lunes, Martes, Miercoles cerrados. Jueves cierra a las 12.
+  if(diaHoy===3) {
+    if(n==='Lunes'||n==='Martes'||n==='Miercoles') return false;
+    if(n==='Jueves' && ahora>=medioDia) return false;
+    return true;
+  }
+
+  // Jueves(4): Lunes a Jueves cerrados. Viernes cierra a las 12.
+  if(diaHoy===4) {
+    if(n==='Lunes'||n==='Martes'||n==='Miercoles'||n==='Jueves') return false;
+    if(n==='Viernes' && ahora>=medioDia) return false;
+    return true;
+  }
+
+  // Viernes(5): todos disponibles (son de la semana proxima)
+  if(diaHoy===5) return true;
 
   return true;
 }
