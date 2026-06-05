@@ -450,13 +450,13 @@ var UMBRAL_DESC   = 3;
 // Para cambiar: actualizar dias y semana_key
 // ══════════════════════════════════════
 var SEMANA_KEY   = 'semana6';
-var SEMANA_LABEL = 'Semana del 9 al 13 de junio';
+var SEMANA_LABEL = 'Semana del 8 al 12 de junio';
 var MENU_DIAS = {
-  'Lunes':     { fecha:'Lunes 9/6',    plato:'Cazuela de porotos negros' },
-  'Martes':    { fecha:'Martes 10/6',  plato:'Hamburguesas con tortilla de papas y remolacha' },
-  'Miercoles': { fecha:'Miercoles 11/6',plato:'Pollo con papas y boniatos' },
-  'Jueves':    { fecha:'Jueves 12/6',  plato:'Pesca del dia con pure de boniato y remolacha' },
-  'Viernes':   { fecha:'Viernes 13/6', plato:'Carne al horno con pure de verduras' }
+  'Lunes':     { fecha:'Lunes 8/6',    plato:'Cazuela de porotos negros' },
+  'Martes':    { fecha:'Martes 9/6',  plato:'Hamburguesas con tortilla de papas y remolacha' },
+  'Miercoles': { fecha:'Miercoles 10/6',plato:'Pollo con papas y boniatos' },
+  'Jueves':    { fecha:'Jueves 11/6',  plato:'Pesca del dia con pure de boniato y remolacha' },
+  'Viernes':   { fecha:'Viernes 12/6', plato:'Carne al horno con pure de verduras' }
 };
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
@@ -803,7 +803,7 @@ function switchAdminSection(s){
 }
 var SEMANA4_FECHAS={'Lunes':'L 26/5','Martes':'M 27/5','Miercoles':'X 28/5','Jueves':'J 29/5','Viernes':'V 30/5'};
 var SEMANA5_FECHAS={'Lunes':'L 1/6','Martes':'M 2/6','Miercoles':'X 3/6','Jueves':'J 4/6','Viernes':'V 5/6'};
-var SEMANA6_FECHAS={'Lunes':'L 9/6','Martes':'M 10/6','Miercoles':'X 11/6','Jueves':'J 12/6','Viernes':'V 13/6'};
+var SEMANA6_FECHAS={'Lunes':'L 8/6','Martes':'M 9/6','Miercoles':'X 10/6','Jueves':'J 11/6','Viernes':'V 12/6'};
 
 function loadAdminStats(){
   sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana6').then(function(res){
