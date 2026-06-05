@@ -449,14 +449,14 @@ var UMBRAL_DESC   = 3;
 // MENU ACTIVO — semana5 = 1 al 5 junio
 // Para cambiar: actualizar dias y semana_key
 // ══════════════════════════════════════
-var SEMANA_KEY   = 'semana5';
-var SEMANA_LABEL = 'Semana del 1 al 5 de junio';
+var SEMANA_KEY   = 'semana6';
+var SEMANA_LABEL = 'Semana del 9 al 13 de junio';
 var MENU_DIAS = {
-  'Lunes':     { fecha:'Lunes 1/6',    plato:'Pollo salteado con morron, cebolla, zanahoria, papas y huevo duro' },
-  'Martes':    { fecha:'Martes 2/6',   plato:'Cazuela de lentejas' },
-  'Miercoles': { fecha:'Miercoles 3/6',plato:'Pastel de carne de boniato' },
-  'Jueves':    { fecha:'Jueves 4/6',   plato:'Colita de cuadril con tortilla de espinaca' },
-  'Viernes':   { fecha:'Viernes 5/6',  plato:'Bondiola con pure de papas, brocoli' }
+  'Lunes':     { fecha:'Lunes 9/6',    plato:'Cazuela de porotos negros' },
+  'Martes':    { fecha:'Martes 10/6',  plato:'Hamburguesas con tortilla de papas y remolacha' },
+  'Miercoles': { fecha:'Miercoles 11/6',plato:'Pollo con papas y boniatos' },
+  'Jueves':    { fecha:'Jueves 12/6',  plato:'Pesca del dia con pure de boniato y remolacha' },
+  'Viernes':   { fecha:'Viernes 13/6', plato:'Carne al horno con pure de verduras' }
 };
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
@@ -803,17 +803,21 @@ function switchAdminSection(s){
 }
 var SEMANA4_FECHAS={'Lunes':'L 26/5','Martes':'M 27/5','Miercoles':'X 28/5','Jueves':'J 29/5','Viernes':'V 30/5'};
 var SEMANA5_FECHAS={'Lunes':'L 1/6','Martes':'M 2/6','Miercoles':'X 3/6','Jueves':'J 4/6','Viernes':'V 5/6'};
+var SEMANA6_FECHAS={'Lunes':'L 9/6','Martes':'M 10/6','Miercoles':'X 11/6','Jueves':'J 12/6','Viernes':'V 13/6'};
 
 function loadAdminStats(){
-  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana5').then(function(res){
+  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana6').then(function(res){
     var todos=res.data||[];
-    var html=DIAS.map(function(dia){
+    var html='';
+    DIAS.forEach(function(dia){
       var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); }).reduce(function(s,p){ return s+p.cantidad; },0);
-      var lbl=SEMANA5_FECHAS[dia]||dia;
-      return '<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana5\')"><div class="stat-val">'+cant+'</div><div class="stat-lbl">'+lbl+'</div></div>';
-    }).join('');
+      var lbl=SEMANA6_FECHAS[dia]||dia;
+      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana6\')" >';
+      html+='<div class="stat-val">'+cant+'</div><div class="stat-lbl">'+lbl+'</div></div>';
+    });
     var total=todos.reduce(function(s,p){ return s+p.cantidad; },0);
-    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana5\')"><div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.5</div></div>';
+    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana6\')" >';
+    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.6</div></div>';
     gi('adminStats').innerHTML=html;
   });
 }
