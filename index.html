@@ -456,10 +456,10 @@ var SEMANA_KEY   = 'semana9';
 var SEMANA_LABEL = 'Semana del 29 de junio al 3 de julio';
 var MENU_DIAS = {
   'Lunes':     { fecha:'Lunes 29/6',   plato:'Milanesas de carne picada con tortilla de brocoli' },
-  'Martes':    { fecha:'Martes 1/7',   plato:'Cazuela de porotos de manteca' },
-  'Miercoles': { fecha:'Miercoles 2/7',plato:'Pastel de carne con pure de calabaza' },
-  'Jueves':    { fecha:'Jueves 3/7',   plato:'Matambre con papas' },
-  'Viernes':   { fecha:'Viernes 4/7',  plato:'Bondiola con pure de boniato y remolacha' }
+  'Martes':    { fecha:'Martes 30/6',  plato:'Cazuela de porotos de manteca' },
+  'Miercoles': { fecha:'Miercoles 1/7',plato:'Pastel de carne con pure de calabaza' },
+  'Jueves':    { fecha:'Jueves 2/7',   plato:'Matambre con papas' },
+  'Viernes':   { fecha:'Viernes 3/7',  plato:'Bondiola con pure de boniato y remolacha' }
 };
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
@@ -836,7 +836,7 @@ var SEMANA5_FECHAS={'Lunes':'L 1/6','Martes':'M 2/6','Miercoles':'X 3/6','Jueves
 var SEMANA6_FECHAS={'Lunes':'L 8/6','Martes':'M 9/6','Miercoles':'X 10/6','Jueves':'J 11/6','Viernes':'V 12/6'};
 var SEMANA7_FECHAS={'Lunes':'L 16/6','Martes':'M 17/6','Miercoles':'X 18/6','Jueves':'J 19/6','Viernes':'V 20/6'};
 var SEMANA8_FECHAS={'Lunes':'L 22/6','Martes':'M 23/6','Miercoles':'X 24/6','Jueves':'J 25/6','Viernes':'V 26/6'};
-var SEMANA9_FECHAS={'Lunes':'L 29/6','Martes':'M 1/7','Miercoles':'X 2/7','Jueves':'J 3/7','Viernes':'V 4/7'};
+var SEMANA9_FECHAS={'Lunes':'L 29/6','Martes':'M 30/6','Miercoles':'X 1/7','Jueves':'J 2/7','Viernes':'V 3/7'};
 
 function loadAdminStats(){
   sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana9').then(function(res){
