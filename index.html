@@ -456,8 +456,8 @@ var UMBRAL_DESC   = 3;
 // MENU ACTIVO — semana5 = 1 al 5 junio
 // Para cambiar: actualizar dias y semana_key
 // ══════════════════════════════════════
-var SEMANA_KEY   = 'semana10';
-var SEMANA_LABEL = 'Semana del 6 al 10 de julio';
+var SEMANA_KEY   = 'semana11';
+var SEMANA_LABEL = 'Semana del 13 al 17 de julio';
 var MENU_DIAS = {
   'Lunes':     { fecha:'Lunes 6/7',    plato:'Pan de carne con papas' },
   'Martes':    { fecha:'Martes 7/7',   plato:'Cazuela de matambre' },
@@ -842,20 +842,21 @@ var SEMANA7_FECHAS={'Lunes':'L 16/6','Martes':'M 17/6','Miercoles':'X 18/6','Jue
 var SEMANA8_FECHAS={'Lunes':'L 22/6','Martes':'M 23/6','Miercoles':'X 24/6','Jueves':'J 25/6','Viernes':'V 26/6'};
 var SEMANA9_FECHAS={'Lunes':'L 29/6','Martes':'M 30/6','Miercoles':'X 1/7','Jueves':'J 2/7','Viernes':'V 3/7'};
 var SEMANA10_FECHAS={'Lunes':'L 6/7','Martes':'M 7/7','Miercoles':'X 8/7','Jueves':'J 9/7','Viernes':'V 10/7'};
+var SEMANA11_FECHAS={'Lunes':'L 13/7','Martes':'M 14/7','Miercoles':'X 15/7','Jueves':'J 16/7','Viernes':'V 17/7'};
 
 function loadAdminStats(){
-  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana10').then(function(res){
+  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana11').then(function(res){
     var todos=res.data||[];
     var html='';
     DIAS.forEach(function(dia){
       var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); }).reduce(function(s,p){ return s+p.cantidad; },0);
-      var lbl=SEMANA10_FECHAS[dia]||dia;
-      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana10\')" >';
+      var lbl=SEMANA11_FECHAS[dia]||dia;
+      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana11\')" >';
       html+='<div class="stat-val">'+cant+'</div><div class="stat-lbl">'+lbl+'</div></div>';
     });
     var total=todos.reduce(function(s,p){ return s+p.cantidad; },0);
-    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana10\')" >';
-    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.10</div></div>';
+    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana11\')" >';
+    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.11</div></div>';
     gi('adminStats').innerHTML=html;
   });
 }
