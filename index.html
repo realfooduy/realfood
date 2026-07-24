@@ -472,14 +472,14 @@ var UMBRAL_DESC   = 3;
 // MENU ACTIVO — semana5 = 1 al 5 junio
 // Para cambiar: actualizar dias y semana_key
 // ══════════════════════════════════════
-var SEMANA_KEY   = 'semana12';
-var SEMANA_LABEL = 'Semana del 20 al 24 de julio';
+var SEMANA_KEY   = 'semana13';
+var SEMANA_LABEL = 'Semana del 27 al 31 de julio';
 var MENU_DIAS = {
-  'Lunes':     { fecha:'Lunes 20/7',   plato:'Cazuela de porotos de manteca' },
-  'Martes':    { fecha:'Martes 21/7',  plato:'Milanesas de pollo con tortilla de brocoli' },
-  'Miercoles': { fecha:'Miercoles 22/7',plato:'Pastel de carne con pure de calabaza' },
-  'Jueves':    { fecha:'Jueves 23/7',  plato:'Matambre con papas' },
-  'Viernes':   { fecha:'Viernes 24/7', plato:'Bondiola con pure de boniato y calabaza' }
+  'Lunes':     { fecha:'Lunes 27/7',   plato:'Cazuela de lentejas' },
+  'Martes':    { fecha:'Martes 28/7',  plato:'Milanesa de carne y revuelto de zapallito' },
+  'Miercoles': { fecha:'Miercoles 29/7',plato:'Pastel de carne con pure de papas' },
+  'Jueves':    { fecha:'Jueves 30/7',  plato:'Bondiola con papines y remolacha' },
+  'Viernes':   { fecha:'Viernes 31/7', plato:'Pescado con pure de boniatos' }
 };
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
@@ -892,20 +892,21 @@ var SEMANA9_FECHAS={'Lunes':'L 29/6','Martes':'M 30/6','Miercoles':'X 1/7','Juev
 var SEMANA10_FECHAS={'Lunes':'L 6/7','Martes':'M 7/7','Miercoles':'X 8/7','Jueves':'J 9/7','Viernes':'V 10/7'};
 var SEMANA11_FECHAS={'Lunes':'L 13/7','Martes':'M 14/7','Miercoles':'X 15/7','Jueves':'J 16/7','Viernes':'V 17/7'};
 var SEMANA12_FECHAS={'Lunes':'L 20/7','Martes':'M 21/7','Miercoles':'X 22/7','Jueves':'J 23/7','Viernes':'V 24/7'};
+var SEMANA13_FECHAS={'Lunes':'L 27/7','Martes':'M 28/7','Miercoles':'X 29/7','Jueves':'J 30/7','Viernes':'V 31/7'};
 
 function loadAdminStats(){
-  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana12').then(function(res){
+  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana13').then(function(res){
     var todos=res.data||[];
     var html='';
     DIAS.forEach(function(dia){
       var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); }).reduce(function(s,p){ return s+p.cantidad; },0);
-      var lbl=SEMANA12_FECHAS[dia]||dia;
-      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana12\')" >';
+      var lbl=SEMANA13_FECHAS[dia]||dia;
+      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana13\')" >';
       html+='<div class="stat-val">'+cant+'</div><div class="stat-lbl">'+lbl+'</div></div>';
     });
     var total=todos.reduce(function(s,p){ return s+p.cantidad; },0);
-    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana12\')" >';
-    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.12</div></div>';
+    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana13\')" >';
+    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.13</div></div>';
     gi('adminStats').innerHTML=html;
   });
 }
