@@ -472,14 +472,14 @@ var UMBRAL_DESC   = 3;
 // MENU ACTIVO — semana5 = 1 al 5 junio
 // Para cambiar: actualizar dias y semana_key
 // ══════════════════════════════════════
-var SEMANA_KEY   = 'semana18';
-var SEMANA_LABEL = 'Semana del 31 de agosto al 4 de septiembre';
+var SEMANA_KEY   = 'semana19';
+var SEMANA_LABEL = 'Semana del 7 al 11 de septiembre';
 var MENU_DIAS = {
-  'Lunes':     { fecha:'Lunes 31/8',   plato:'Pastel de carne con pure de calabaza' },
-  'Martes':    { fecha:'Martes 1/9',   plato:'Bondiola con boniatos y brocoli' },
-  'Miercoles': { fecha:'Miercoles 2/9',plato:'Bifes a la portuguesa' },
-  'Jueves':    { fecha:'Jueves 3/9',   plato:'Salteado de pollo con verduras, huevo y papas' },
-  'Viernes':   { fecha:'Viernes 4/9',  plato:'Albondigas con pure de papa' }
+  'Lunes':     { fecha:'Lunes 7/9',    plato:'Milanesas de carne con pure de calabaza' },
+  'Martes':    { fecha:'Martes 8/9',   plato:'Strogonoff de pollo con pure de papa' },
+  'Miercoles': { fecha:'Miercoles 9/9',plato:'Bondiola braceada con boniatos al horno y brocoli' },
+  'Jueves':    { fecha:'Jueves 10/9',  plato:'Cazuela de porotos negros' },
+  'Viernes':   { fecha:'Viernes 11/9', plato:'Pastel de carne con pure de boniato' }
 };
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
@@ -898,20 +898,21 @@ var SEMANA15_FECHAS={'Lunes':'L 10/8','Martes':'M 11/8','Miercoles':'X 12/8','Ju
 var SEMANA16_FECHAS={'Lunes':'L 17/8','Martes':'M 18/8','Miercoles':'X 19/8','Jueves':'J 20/8','Viernes':'V 21/8'};
 var SEMANA17_FECHAS={'Lunes':'L 24/8','Martes':'M 25/8','Miercoles':'X 26/8','Jueves':'J 27/8','Viernes':'V 28/8'};
 var SEMANA18_FECHAS={'Lunes':'L 31/8','Martes':'M 1/9','Miercoles':'X 2/9','Jueves':'J 3/9','Viernes':'V 4/9'};
+var SEMANA19_FECHAS={'Lunes':'L 7/9','Martes':'M 8/9','Miercoles':'X 9/9','Jueves':'J 10/9','Viernes':'V 11/9'};
 
 function loadAdminStats(){
-  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana18').then(function(res){
+  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana19').then(function(res){
     var todos=res.data||[];
     var html='';
     DIAS.forEach(function(dia){
       var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); }).reduce(function(s,p){ return s+p.cantidad; },0);
-      var lbl=SEMANA18_FECHAS[dia]||dia;
-      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana18\')" >';
+      var lbl=SEMANA19_FECHAS[dia]||dia;
+      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana19\')" >';
       html+='<div class="stat-val">'+cant+'</div><div class="stat-lbl">'+lbl+'</div></div>';
     });
     var total=todos.reduce(function(s,p){ return s+p.cantidad; },0);
-    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana18\')" >';
-    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.18</div></div>';
+    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana19\')" >';
+    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.19</div></div>';
     gi('adminStats').innerHTML=html;
   });
 }
