@@ -472,14 +472,14 @@ var UMBRAL_DESC   = 3;
 // MENU ACTIVO — semana5 = 1 al 5 junio
 // Para cambiar: actualizar dias y semana_key
 // ══════════════════════════════════════
-var SEMANA_KEY   = 'semana25';
-var SEMANA_LABEL = 'Semana del 19 al 23 de octubre';
+var SEMANA_KEY   = 'semana26';
+var SEMANA_LABEL = 'Semana del 26 al 30 de octubre';
 var MENU_DIAS = {
-  'Lunes':     { fecha:'Lunes 19/10',  plato:'Bondiola con mix de verduras asadas' },
-  'Martes':    { fecha:'Martes 20/10', plato:'Estofado de papas' },
-  'Miercoles': { fecha:'Miercoles 21/10',plato:'Pollo a la plancha con pure de papa y remolacha' },
-  'Jueves':    { fecha:'Jueves 22/10', plato:'Pastel de carne con pure de boniato' },
-  'Viernes':   { fecha:'Viernes 23/10',plato:'Milanesa con pure de verduras' }
+  'Lunes':     { fecha:'Lunes 26/10',  plato:'Bondiola con quinoa y brocoli' },
+  'Martes':    { fecha:'Martes 27/10', plato:'Pastel de carne con pure de zapallo' },
+  'Miercoles': { fecha:'Miercoles 28/10',plato:'Strogonoff de pollo con pure de papa' },
+  'Jueves':    { fecha:'Jueves 29/10', plato:'Noquis con bolonesa' },
+  'Viernes':   { fecha:'Viernes 30/10',plato:'Milanesas de pollo con pure de boniato' }
 };
 var DIAS = ['Lunes','Martes','Miercoles','Jueves','Viernes'];
 
@@ -905,20 +905,21 @@ var SEMANA22_FECHAS={'Lunes':'L 28/9','Martes':'M 29/9','Miercoles':'X 30/9','Ju
 var SEMANA23_FECHAS={'Lunes':'L 5/10','Martes':'M 6/10','Miercoles':'X 7/10','Jueves':'J 8/10','Viernes':'V 9/10'};
 var SEMANA24_FECHAS={'Lunes':'L 12/10','Martes':'M 13/10','Miercoles':'X 14/10','Jueves':'J 15/10','Viernes':'V 16/10'};
 var SEMANA25_FECHAS={'Lunes':'L 19/10','Martes':'M 20/10','Miercoles':'X 21/10','Jueves':'J 22/10','Viernes':'V 23/10'};
+var SEMANA26_FECHAS={'Lunes':'L 26/10','Martes':'M 27/10','Miercoles':'X 28/10','Jueves':'J 29/10','Viernes':'V 30/10'};
 
 function loadAdminStats(){
-  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana25').then(function(res){
+  sb.from('pedidos').select('cantidad,dia_semana,semana_key').eq('semana_key','semana26').then(function(res){
     var todos=res.data||[];
     var html='';
     DIAS.forEach(function(dia){
       var cant=todos.filter(function(p){ return normDia(p.dia_semana)===normDia(dia); }).reduce(function(s,p){ return s+p.cantidad; },0);
-      var lbl=SEMANA25_FECHAS[dia]||dia;
-      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana25\')" >';
+      var lbl=SEMANA26_FECHAS[dia]||dia;
+      html+='<div class="stat-card" id="stat-'+dia+'" onclick="adminTabSemana(\''+dia+'\',\'semana26\')" >';
       html+='<div class="stat-val">'+cant+'</div><div class="stat-lbl">'+lbl+'</div></div>';
     });
     var total=todos.reduce(function(s,p){ return s+p.cantidad; },0);
-    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana25\')" >';
-    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.25</div></div>';
+    html+='<div class="stat-card stat-total" style="cursor:pointer" onclick="adminTabSemana(\'todos\',\'semana26\')" >';
+    html+='<div class="stat-val">'+total+'</div><div class="stat-lbl">Total Sem.26</div></div>';
     gi('adminStats').innerHTML=html;
   });
 }
